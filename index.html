@@ -509,6 +509,105 @@
             </div>
         </div>
     </div>
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center border-b p-4">
+                <h3 id="contact-modal-title" class="text-xl font-semibold text-gray-800">Registo de Contacto</h3>
+                <button id="contact-modal-close" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="contact-form" class="flex-1 overflow-y-auto p-6 space-y-4">
+                 <!-- Basic Info -->
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tipo de Contacto*</label>
+                        <select name="contact_type" required class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="Cliente">Cliente</option>
+                            <option value="Fornecedor">Fornecedor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tipo de Pessoa*</label>
+                        <select name="person_type" required class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <option value="Física">Física</option>
+                            <option value="Jurídica">Jurídica</option>
+                        </select>
+                    </div>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nome / Razão Social*</label>
+                        <input type="text" name="name" required class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">CPF / CNPJ</label>
+                        <input type="text" name="cpf_cnpj" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                        <input type="tel" name="phone" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                     <div id="credit-limit-field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Limite de Crédito (R$)</label>
+                        <input type="number" step="0.01" name="credit_limit" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00">
+                    </div>
+                 </div>
+                 <!-- Address -->
+                 <div class="pt-4 border-t">
+                    <h4 class="text-md font-semibold text-gray-800 mb-2">Endereço</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700">CEP</label>
+                            <input type="text" name="address_zipcode" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Rua</label>
+                            <input type="text" name="address_street" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Número</label>
+                            <input type="text" name="address_number" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Complemento</label>
+                            <input type="text" name="address_complement" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bairro</label>
+                            <input type="text" name="address_neighborhood" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Cidade</label>
+                            <input type="text" name="address_city" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Estado</label>
+                            <input type="text" name="address_state" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                    </div>
+                 </div>
+                 <!-- Notes -->
+                 <div class="pt-4 border-t">
+                    <label class="block text-sm font-medium text-gray-700">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full mt-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+                 </div>
+            </form>
+            <div class="flex justify-end items-center border-t p-4 gap-4">
+                <button id="contact-modal-cancel" class="border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button>
+                <button type="submit" form="contact-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar Contacto</button>
+            </div>
+        </div>
+    </div>
 
 
     <script type="module">
@@ -534,12 +633,6 @@
                     }
                 });
             }
-
-
-            // Initial dummy data for clients and suppliers (will be replaced by Supabase later)
-            let clientsAndSuppliers = [
-                { id: 1, tipo: 'Cliente', pessoa: 'Física', nome: 'João da Silva', cpf: '123.456.789-00', email: 'joao.silva@email.com', telefone: '(11) 98765-4321' },
-            ];
 
             const setActiveLink = (id) => {
                 navLinks.forEach(link => {
@@ -720,29 +813,29 @@
                     };
 
                     const populateProductForm = (product) => {
-                        productForm.querySelector('[name="product-name"]').value = product.name || '';
-                        productForm.querySelector('[name="product-sku"]').value = product.sku || '';
-                        productForm.querySelector('[name="product-price"]').value = product.sale_price || '';
-                        productForm.querySelector('[name="product-format"]').value = product.format || 'Simples';
-                        productForm.querySelector('[name="product-type"]').value = product.type || 'Produto';
-                        productForm.querySelector('[name="product-condition"]').value = product.condition || 'Novo';
-                        productForm.querySelector('[name="product-brand"]').value = product.brand || '';
-                        productForm.querySelector('[name="product-production"]').value = product.production_type || 'Própria';
-                        productForm.querySelector('[name="product-expiration-date"]').value = product.expiration_date || '';
+                        productForm.querySelector('[name="product-name"]').value = product.name ?? '';
+                        productForm.querySelector('[name="product-sku"]').value = product.sku ?? '';
+                        productForm.querySelector('[name="product-price"]').value = product.sale_price ?? '';
+                        productForm.querySelector('[name="product-format"]').value = product.format ?? 'Simples';
+                        productForm.querySelector('[name="product-type"]').value = product.type ?? 'Produto';
+                        productForm.querySelector('[name="product-condition"]').value = product.condition ?? 'Novo';
+                        productForm.querySelector('[name="product-brand"]').value = product.brand ?? '';
+                        productForm.querySelector('[name="product-production"]').value = product.production_type ?? 'Própria';
+                        productForm.querySelector('[name="product-expiration-date"]').value = product.expiration_date ?? '';
                         productForm.querySelector('[name="product-free-shipping"]').value = product.free_shipping ? 'true' : 'false';
-                        productForm.querySelector('[name="product-liquid-weight"]').value = product.net_weight_kg || '';
-                        productForm.querySelector('[name="product-gross-weight"]').value = product.gross_weight_kg || '';
-                        productForm.querySelector('[name="product-width"]').value = product.width_cm || '';
-                        productForm.querySelector('[name="product-height"]').value = product.height_cm || '';
-                        productForm.querySelector('[name="product-depth"]').value = product.depth_cm || '';
-                        productForm.querySelector('[name="product-volumes"]').value = product.volumes || '';
-                        productForm.querySelector('[name="product-items-per-box"]').value = product.items_per_box || '';
-                        productForm.querySelector('[name="product-measurement-unit"]').value = product.measurement_unit || 'Centímetros';
-                        productForm.querySelector('[name="product-gtinean"]').value = product.gtin_ean || '';
-                        productForm.querySelector('[name="product-gtinean-tax"]').value = product.gtin_ean_tax || '';
-                        productForm.querySelector('[name="tax-ncm"]').value = product.ncm || '';
-                        productForm.querySelector('[name="tax-cest"]').value = product.cest || '';
-                        productForm.querySelector('[name="tax-origin"]').value = product.origin || '0';
+                        productForm.querySelector('[name="product-liquid-weight"]').value = product.net_weight_kg ?? '';
+                        productForm.querySelector('[name="product-gross-weight"]').value = product.gross_weight_kg ?? '';
+                        productForm.querySelector('[name="product-width"]').value = product.width_cm ?? '';
+                        productForm.querySelector('[name="product-height"]').value = product.height_cm ?? '';
+                        productForm.querySelector('[name="product-depth"]').value = product.depth_cm ?? '';
+                        productForm.querySelector('[name="product-volumes"]').value = product.volumes ?? '';
+                        productForm.querySelector('[name="product-items-per-box"]').value = product.items_per_box ?? '';
+                        productForm.querySelector('[name="product-measurement-unit"]').value = product.measurement_unit ?? 'Centímetros';
+                        productForm.querySelector('[name="product-gtinean"]').value = product.gtin_ean ?? '';
+                        productForm.querySelector('[name="product-gtinean-tax"]').value = product.gtin_ean_tax ?? '';
+                        productForm.querySelector('[name="tax-ncm"]').value = product.ncm ?? '';
+                        productForm.querySelector('[name="tax-cest"]').value = product.cest ?? '';
+                        productForm.querySelector('[name="tax-origin"]').value = product.origin ?? '0';
                         
                         productImages = product.images || [];
                         renderImagePreviews();
@@ -1101,7 +1194,7 @@
                         productImages.forEach((src, index) => {
                             const imageItem = document.createElement('div');
                             imageItem.className = 'relative group aspect-w-1 aspect-h-1 bg-gray-100 border rounded-md overflow-hidden flex items-center justify-center p-2';
-                            imageItem.innerHTML = `<img src="${src}" alt="Pré-visualização ${index + 1}" class="object-cover w-full h-full" onerror="this.onerror=null;this.src='https://placehold.co/120x120/ef4444/ffffff?text=Falha';"><button class="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 delete-image-btn" data-index="${index}"><i data-lucide="x" class="w-3 h-3"></i></button>`;
+                            imageItem.innerHTML = `<img src="${src}" alt="Pré-visualização ${index + 1}" class="object-cover w-full h-full" onerror="this.onerror=null;this.src='https://placehold.co/120x120/ef4444/ffffff?text=Falha';"><button type="button" class="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 delete-image-btn" data-index="${index}"><i data-lucide="x" class="w-3 h-3"></i></button>`;
                             imageDropArea.appendChild(imageItem);
                         });
                         if (productImages.length < MAX_IMAGES) {
@@ -1321,8 +1414,210 @@
             const runClientesFornecedoresScript = () => {
                 console.log('runClientesFornecedoresScript started.');
                 const tableBody = document.getElementById('cs-table-body');
-                if (!tableBody) return;
-                tableBody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">A carregar...</td></tr>';
+                const addContactBtn = document.getElementById('add-cs-btn');
+                const contactModal = document.getElementById('contact-modal');
+                const contactForm = document.getElementById('contact-form');
+                const contactModalCloseBtn = document.getElementById('contact-modal-close');
+                const contactModalCancelBtn = document.getElementById('contact-modal-cancel');
+                const contactModalTitle = document.getElementById('contact-modal-title');
+                const contactTypeSelect = contactForm.querySelector('[name="contact_type"]');
+                const creditLimitField = document.getElementById('credit-limit-field');
+                const confirmationModal = document.getElementById('confirmation-modal');
+                const confirmationTitle = document.getElementById('confirmation-title');
+                const confirmationMessage = document.getElementById('confirmation-message');
+                const confirmActionBtn = document.getElementById('confirm-action-btn');
+                const cancelActionBtn = document.getElementById('cancel-action-btn');
+                const searchInput = document.getElementById('contact-search-input');
+
+
+                let editingContactId = null;
+
+                const showConfirmationModal = (title, message, onConfirm) => {
+                    confirmationTitle.textContent = title;
+                    confirmationMessage.textContent = message;
+
+                    const newConfirmBtn = confirmActionBtn.cloneNode(true);
+                    confirmActionBtn.parentNode.replaceChild(newConfirmBtn, confirmActionBtn);
+                    
+                    const confirmHandler = () => {
+                        onConfirm();
+                        confirmationModal.classList.add('hidden');
+                    };
+                    newConfirmBtn.addEventListener('click', confirmHandler, { once: true });
+                    
+                    const cancelHandler = () => {
+                        confirmationModal.classList.add('hidden');
+                        newConfirmBtn.removeEventListener('click', confirmHandler);
+                    };
+                    cancelActionBtn.addEventListener('click', cancelHandler, { once: true });
+
+                    confirmationModal.classList.remove('hidden');
+                };
+
+                const loadContacts = async (searchTerm = '') => {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">A carregar...</td></tr>';
+                    
+                    let query = window.supabase
+                        .from('contacts')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (searchTerm) {
+                        query = query.or(`name.ilike.%${searchTerm}%,cpf_cnpj.ilike.%${searchTerm}%`);
+                    }
+
+                    const { data: contacts, error } = await query;
+
+                    if (error) {
+                        console.error('Error fetching contacts:', error);
+                        tableBody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-red-400">Erro ao carregar contactos.</td></tr>';
+                        return;
+                    }
+
+                    if (contacts.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">Nenhum contacto encontrado.</td></tr>';
+                        return;
+                    }
+
+                    tableBody.innerHTML = '';
+                    contacts.forEach(contact => {
+                        const tr = document.createElement('tr');
+                        tr.dataset.contactId = contact.id;
+                        tr.innerHTML = `
+                            <td class="p-3">${contact.name}</td>
+                            <td class="p-3">${contact.cpf_cnpj || '-'}</td>
+                             <td class="p-3">${contact.phone || '-'}</td>
+                            <td class="p-3">${contact.contact_type}</td>
+                            <td class="text-center p-3">
+                                <button class="p-1.5 text-gray-500 hover:text-blue-600 rounded-md" data-action="edit"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button class="p-1.5 text-gray-500 hover:text-red-600 rounded-md" data-action="delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                    window.lucide.createIcons();
+                };
+                
+                searchInput.addEventListener('keyup', (e) => {
+                    const searchTerm = e.target.value.trim();
+                    loadContacts(searchTerm);
+                });
+
+                const hideContactModal = () => contactModal.classList.add('hidden');
+
+                const populateContactForm = (contact) => {
+                    for (const key in contact) {
+                        const field = contactForm.querySelector(`[name="${key}"]`);
+                        if (field) {
+                            field.value = contact[key] ?? '';
+                        }
+                    }
+                    contactTypeSelect.dispatchEvent(new Event('change'));
+                };
+
+                contactTypeSelect.addEventListener('change', (e) => {
+                    if (creditLimitField) {
+                        if (e.target.value === 'Cliente') {
+                            creditLimitField.classList.remove('hidden');
+                        } else {
+                            creditLimitField.classList.add('hidden');
+                            creditLimitField.querySelector('input').value = '';
+                        }
+                    }
+                });
+
+                addContactBtn.addEventListener('click', () => {
+                    editingContactId = null;
+                    contactForm.reset();
+                    contactModalTitle.textContent = 'Registo de Novo Contacto';
+                    contactTypeSelect.value = 'Cliente';
+                    contactTypeSelect.dispatchEvent(new Event('change'));
+                    contactModal.classList.remove('hidden');
+                });
+
+                contactModalCloseBtn.addEventListener('click', hideContactModal);
+                contactModalCancelBtn.addEventListener('click', hideContactModal);
+
+                contactForm.addEventListener('submit', async(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(contactForm);
+                    const contactData = Object.fromEntries(formData.entries());
+                    contactData.user_id = window.userId;
+
+                    if (contactData.credit_limit) {
+                        contactData.credit_limit = parseFloat(contactData.credit_limit);
+                    } else {
+                       contactData.credit_limit = null;
+                    }
+                    
+                    if (!contactData.name) {
+                        window.showMessage('O campo Nome é obrigatório.', 'error');
+                        return;
+                    }
+
+                    let error;
+                    if (editingContactId) {
+                         const { error: updateError } = await window.supabase
+                            .from('contacts')
+                            .update(contactData)
+                            .eq('id', editingContactId);
+                        error = updateError;
+                    } else {
+                        const { error: insertError } = await window.supabase.from('contacts').insert([contactData]);
+                        error = insertError;
+                    }
+                    
+                    if (error) {
+                         console.error('Error saving contact:', error);
+                         window.showMessage(`Erro ao guardar contacto: ${error.message}`, 'error');
+                    } else {
+                        window.showMessage(`Contacto ${editingContactId ? 'atualizado' : 'guardado'} com sucesso!`, 'success');
+                        hideContactModal();
+                        loadContacts(searchInput.value.trim());
+                    }
+                });
+                
+                tableBody.addEventListener('click', async (e) => {
+                    const button = e.target.closest('button[data-action]');
+                    if (!button) return;
+
+                    const action = button.dataset.action;
+                    const contactId = button.closest('tr').dataset.contactId;
+
+                    if (action === 'delete') {
+                        showConfirmationModal(
+                            'Apagar Contacto',
+                            'Tem a certeza de que deseja apagar este contacto? Esta ação é irreversível.',
+                            async () => {
+                                const { error } = await window.supabase.from('contacts').delete().eq('id', contactId);
+                                if (error) {
+                                    window.showMessage(`Erro ao apagar: ${error.message}`, 'error');
+                                } else {
+                                    window.showMessage('Contacto apagado com sucesso.', 'success');
+                                    loadContacts(searchInput.value.trim());
+                                }
+                            }
+                        );
+                    } else if (action === 'edit') {
+                        const { data: contact, error } = await window.supabase
+                            .from('contacts')
+                            .select('*')
+                            .eq('id', contactId)
+                            .single();
+                        
+                        if (error) {
+                            window.showMessage(`Erro ao carregar contacto: ${error.message}`, 'error');
+                        } else {
+                            editingContactId = contactId;
+                            contactModalTitle.textContent = 'Editar Contacto';
+                            populateContactForm(contact);
+                            contactModal.classList.remove('hidden');
+                        }
+                    }
+                });
+
+                // Initial load
+                loadContacts();
             };
 
             const dashboardHtml = `
@@ -1540,7 +1835,7 @@
                     </div>
                 </aside>
             </div>`;
-            const clientesFornecedoresHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Clientes e Fornecedores</h1></div><div class="flex items-center gap-4"><button id="add-cs-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Nome</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Documento</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Tipo</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="cs-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
+            const clientesFornecedoresHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Clientes e Fornecedores</h1></div><div class="flex items-center gap-4"><div class="relative"><input type="text" id="contact-search-input" class="w-64 pl-10 pr-4 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Pesquisar por nome ou documento..."><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div></div><button id="add-cs-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Nome</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Documento</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Telefone</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Tipo</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="cs-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
             
         document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); showPage(dashboardHtml, 'nav-dashboard', runDashboardScript); });
         document.getElementById('nav-vendas').addEventListener('click', (e) => { e.preventDefault(); showPage(vendasHtml, 'nav-vendas'); });
@@ -1628,5 +1923,4 @@
 </script>
 </body>
 </html>
-```eof
 
