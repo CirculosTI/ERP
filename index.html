@@ -449,7 +449,7 @@
         </div>
     </div>
     
-    <div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Não</option><option>Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
+    <div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="false">Não</option><option value="true">Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
     <div id="import-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl p-6"><div class="flex justify-between items-center border-b pb-3 mb-4"><h3 class="text-xl font-semibold text-gray-800">Importar Produtos em Massa</h3><button id="import-modal-close" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="space-y-6 mt-4"><div><h4 class="font-semibold text-gray-700">Passo 1: Baixe o nosso modelo</h4><p class="text-sm text-gray-600 mt-1">Para garantir que os seus dados são importados corretamente, use o nosso ficheiro modelo. Preencha-o com os seus produtos antes de carregar.</p><button id="download-template-btn" class="mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-md flex items-center gap-2 transition-colors duration-200 border border-gray-300"><i data-lucide="download-cloud" class="w-4 h-4"></i> Baixar Modelo (CSV)</button></div><div class="border-t border-gray-200"></div><div><h4 class="font-semibold text-gray-700">Passo 2: Carregue o seu ficheiro preenchido</h4><p class="text-sm text-gray-600 mt-1">Formatos suportados: CSV, XLS, XLSX.</p><div id="import-drop-area" class="mt-3 flex justify-center items-center w-full h-32 px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 bg-gray-50"><div class="text-center"><i data-lucide="upload-cloud" class="mx-auto h-10 w-10 text-gray-400"></i><p id="import-file-text" class="mt-2 text-sm text-gray-600"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p><input id="import-file-input" type="file" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"></div></div><p id="import-file-name" class="text-sm text-gray-500 mt-2"></p></div></div><div class="flex justify-end items-center border-t pt-4 mt-6 gap-4"><button id="import-modal-cancel" class="border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button id="process-import-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200 disabled:bg-gray-400" disabled>Importar Produtos</button></div></div></div>
     <div id="date-picker-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
         <div class="date-picker-modal-content w-full max-w-4xl p-6 flex gap-6">
@@ -494,6 +494,19 @@
                 </div>
             </div>
             <button id="date-picker-close-btn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 p-1.5 rounded-md"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <h3 id="confirmation-title" class="text-lg font-medium text-gray-900">Confirmar Ação</h3>
+            <div class="mt-2">
+                <p id="confirmation-message" class="text-sm text-gray-500">Tem a certeza de que deseja executar esta ação?</p>
+            </div>
+            <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                <button id="confirm-action-btn" type="button" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:col-start-2">Confirmar</button>
+                <button id="cancel-action-btn" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -650,11 +663,130 @@
                     const refreshBtn = document.getElementById('refresh-product-btn');
                     const viewOptionsBtn = document.getElementById('view-options-product-btn');
                     const selectAllCheckbox = document.getElementById('select-all-products');
+                    const confirmationModal = document.getElementById('confirmation-modal');
+                    const confirmationTitle = document.getElementById('confirmation-title');
+                    const confirmationMessage = document.getElementById('confirmation-message');
+                    const confirmActionBtn = document.getElementById('confirm-action-btn');
+                    const cancelActionBtn = document.getElementById('cancel-action-btn');
 
                     const MAX_IMAGES = 4;
                     let productImages = [];
+                    
+                    // --- SUPABASE DATA FUNCTIONS ---
 
-                    tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">A carregar produtos...</td></tr>';
+                    const loadProducts = async () => {
+                        tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">A carregar produtos...</td></tr>';
+                        
+                        const { data: products, error } = await window.supabase
+                            .from('products')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+
+                        if (error) {
+                            console.error('Error fetching products:', error);
+                            window.showMessage('Erro ao carregar produtos.', 'error');
+                            tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-red-400">Erro ao carregar. Tente novamente.</td></tr>';
+                            return;
+                        }
+
+                        if (products.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-500">Nenhum produto encontrado. Adicione um novo!</td></tr>';
+                            return;
+                        }
+
+                        tableBody.innerHTML = ''; // Clear table
+                        products.forEach(product => {
+                            const tr = document.createElement('tr');
+                            tr.dataset.productId = product.id;
+                            tr.innerHTML = `
+                                <td class="p-3"><input type="checkbox" class="product-checkbox rounded-sm text-blue-500 bg-gray-600 border-gray-500"></td>
+                                <td class="p-3">
+                                    <img src="${product.images && product.images.length > 0 ? product.images[0] : 'https://placehold.co/40x40/444444/ffffff?text=Prod'}" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
+                                </td>
+                                <td class="p-3">${product.name}</td>
+                                <td class="p-3">${product.sku || '-'}</td>
+                                <td class="p-3">${product.measurement_unit || 'UN'}</td>
+                                <td class="p-3">${product.sale_price ? `R$ ${product.sale_price.toFixed(2)}` : '-'}</td>
+                                <td class="p-3 text-center">${product.stock_quantity || 0}</td>
+                                <td class="text-center p-3">
+                                    <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="edit"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+                                    <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                </td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                        window.lucide.createIcons();
+                    };
+
+                    productForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(productForm);
+                        
+                        const productData = {
+                            name: formData.get('product-name'),
+                            sku: formData.get('product-sku'),
+                            sale_price: parseFloat(formData.get('product-price')) || null,
+                            format: formData.get('product-format'),
+                            type: formData.get('product-type'),
+                            condition: formData.get('product-condition'),
+                            brand: formData.get('product-brand'),
+                            production_type: formData.get('product-production'),
+                            expiration_date: formData.get('product-expiration-date') || null,
+                            free_shipping: formData.get('product-free-shipping') === 'true',
+                            net_weight_kg: parseFloat(formData.get('product-liquid-weight')) || null,
+                            gross_weight_kg: parseFloat(formData.get('product-gross-weight')) || null,
+                            width_cm: parseFloat(formData.get('product-width')) || null,
+                            height_cm: parseFloat(formData.get('product-height')) || null,
+                            depth_cm: parseFloat(formData.get('product-depth')) || null,
+                            volumes: parseInt(formData.get('product-volumes')) || null,
+                            items_per_box: parseInt(formData.get('product-items-per-box')) || null,
+                            measurement_unit: formData.get('product-measurement-unit'),
+                            gtin_ean: formData.get('product-gtinean'),
+                            gtin_ean_tax: formData.get('product-gtinean-tax'),
+                            images: productImages, // from the global array
+                            ncm: formData.get('tax-ncm'),
+                            cest: formData.get('tax-cest'),
+                            origin: formData.get('tax-origin')
+                        };
+
+                        console.log('Saving product:', productData);
+
+                        const { error } = await window.supabase.from('products').insert([productData]);
+
+                        if (error) {
+                            console.error('Error saving product:', error);
+                            window.showMessage(`Erro ao guardar produto: ${error.message}`, 'error');
+                        } else {
+                            window.showMessage('Produto guardado com sucesso!', 'success');
+                            hideProductModal();
+                            loadProducts(); // Refresh the list
+                        }
+                    });
+
+
+                    // --- UI & EVENT LISTENERS ---
+                     const showConfirmationModal = (title, message, onConfirm) => {
+                        confirmationTitle.textContent = title;
+                        confirmationMessage.textContent = message;
+
+                        const newConfirmBtn = confirmActionBtn.cloneNode(true);
+                        confirmActionBtn.parentNode.replaceChild(newConfirmBtn, confirmActionBtn);
+                        
+                        const confirmHandler = () => {
+                            onConfirm();
+                            confirmationModal.classList.add('hidden');
+                        };
+                        newConfirmBtn.addEventListener('click', confirmHandler, { once: true });
+                        
+                        const cancelHandler = () => {
+                            confirmationModal.classList.add('hidden');
+                            newConfirmBtn.removeEventListener('click', confirmHandler);
+                        };
+                        cancelActionBtn.addEventListener('click', cancelHandler, { once: true });
+
+                        confirmationModal.classList.remove('hidden');
+                    };
+
 
                     const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
                     let currentMonthLeft = new Date();
@@ -902,7 +1034,7 @@
                     trashBtn?.addEventListener('click', () => handleBatchAction('Excluir', 'A mover'));
                     refreshBtn?.addEventListener('click', () => {
                         window.showMessage("A atualizar a lista de produtos...", "info");
-                        applyFilters();
+                        loadProducts();
                     });
                     viewOptionsBtn?.addEventListener('click', () => window.showMessage("Opções de visualização pendentes.", "info"));
 
@@ -994,18 +1126,35 @@
                         productForm.querySelector('[name="product-gtinean"]').value = `GTIN-${Math.floor(100000000000 + Math.random() * 900000000000)}`;
                     });
 
-                    productForm.addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        window.showMessage("Guarda de produto no Supabase pendente.", "info");
-                        hideProductModal();
-                    });
-
                     tableBody.addEventListener('click', (e) => {
                         const button = e.target.closest('button[data-action]');
                         if (button) {
                             const action = button.dataset.action;
                             const productId = button.closest('tr').dataset.productId;
-                            window.showMessage(`Ação '${action}' para produto ${productId} pendente.`, "info");
+
+                            if (action === 'delete') {
+                                showConfirmationModal(
+                                    'Apagar Produto',
+                                    `Tem a certeza de que deseja apagar este produto? Esta ação não pode ser revertida.`,
+                                    async () => {
+                                        console.log(`Deleting product with ID: ${productId}`);
+                                        const { error } = await window.supabase
+                                            .from('products')
+                                            .delete()
+                                            .eq('id', productId);
+
+                                        if (error) {
+                                            console.error('Error deleting product:', error);
+                                            window.showMessage(`Erro ao apagar produto: ${error.message}`, 'error');
+                                        } else {
+                                            window.showMessage('Produto apagado com sucesso!', 'success');
+                                            loadProducts(); // Refresh the list
+                                        }
+                                    }
+                                );
+                            } else if (action === 'edit') {
+                                window.showMessage(`Ação 'editar' para produto ${productId} pendente.`, "info");
+                            }
                         }
                     });
 
@@ -1109,6 +1258,8 @@
                     });
 
 
+                    // Initial load
+                    loadProducts();
                     applyFilters();
                 } catch (error) {
                     console.error("An error occurred in runProductSystemScript:", error);
@@ -1185,6 +1336,87 @@
                             <div class="h-80">
                                 <canvas id="topProductsChart"></canvas>
                             </div>
+                        </div>
+                    </div>
+                     <!-- Quick Access & Alerts Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                        <!-- Recent Sales -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="font-semibold text-gray-800 mb-4">Últimas Vendas Realizadas</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="py-3 px-6">Cliente</th>
+                                            <th scope="col" class="py-3 px-6">Status</th>
+                                            <th scope="col" class="py-3 px-6">Valor</th>
+                                            <th scope="col" class="py-3 px-6">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-white border-b">
+                                            <td class="py-4 px-6 font-medium text-gray-900">Ana Clara</td>
+                                            <td class="py-4 px-6"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Pago</span></td>
+                                            <td class="py-4 px-6">R$ 450,00</td>
+                                            <td class="py-4 px-6"><a href="#" class="font-medium text-blue-600 hover:underline">Ver Detalhes</a></td>
+                                        </tr>
+                                        <tr class="bg-white border-b">
+                                            <td class="py-4 px-6 font-medium text-gray-900">Bruno Costa</td>
+                                            <td class="py-4 px-6"><span class="bg-yellow-100 text-yellow-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Pendente</span></td>
+                                            <td class="py-4 px-6">R$ 120,50</td>
+                                            <td class="py-4 px-6"><a href="#" class="font-medium text-blue-600 hover:underline">Ver Detalhes</a></td>
+                                        </tr>
+                                        <tr class="bg-white border-b">
+                                            <td class="py-4 px-6 font-medium text-gray-900">Carla Dias</td>
+                                            <td class="py-4 px-6"><span class="bg-red-100 text-red-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Cancelado</span></td>
+                                            <td class="py-4 px-6">R$ 80,00</td>
+                                            <td class="py-4 px-6"><a href="#" class="font-medium text-blue-600 hover:underline">Ver Detalhes</a></td>
+                                        </tr>
+                                         <tr class="bg-white">
+                                            <td class="py-4 px-6 font-medium text-gray-900">Daniel Furtado</td>
+                                            <td class="py-4 px-6"><span class="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">Pago</span></td>
+                                            <td class="py-4 px-6">R$ 1.200,00</td>
+                                            <td class="py-4 px-6"><a href="#" class="font-medium text-blue-600 hover:underline">Ver Detalhes</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Low Stock Alert -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                             <h3 class="font-semibold text-gray-800 mb-4">Alerta de Baixo Estoque</h3>
+                             <ul class="divide-y divide-gray-200">
+                                <li class="py-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Fita Veda Rosca 12mm</p>
+                                        <p class="text-sm text-gray-500">SKU: 9776</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-red-600">Apenas 2 un.</p>
+                                        <a href="#" class="text-xs text-blue-600 hover:underline">Ver Produto</a>
+                                    </div>
+                                </li>
+                                <li class="py-3 flex justify-between items-center">
+                                     <div>
+                                        <p class="text-sm font-medium text-gray-900">Carro Infantil Totoca</p>
+                                        <p class="text-sm text-gray-500">SKU: 6002</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-red-600">Apenas 1 un.</p>
+                                        <a href="#" class="text-xs text-blue-600 hover:underline">Ver Produto</a>
+                                    </div>
+                                </li>
+                                <li class="py-3 flex justify-between items-center">
+                                     <div>
+                                        <p class="text-sm font-medium text-gray-900">Lâmpada LED 9W</p>
+                                        <p class="text-sm text-gray-500">SKU: 4152</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-semibold text-yellow-600">Apenas 5 un.</p>
+                                        <a href="#" class="text-xs text-blue-600 hover:underline">Ver Produto</a>
+                                    </div>
+                                </li>
+                             </ul>
                         </div>
                     </div>
                 </div>
@@ -1345,4 +1577,4 @@
 </script>
 </body>
 </html>
-
+```eof
