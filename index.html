@@ -74,7 +74,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 1000;
+            z-index: 1050; /* Ensure it's above modals */
             display: none;
             padding: 1rem;
             border-radius: 0.5rem;
@@ -205,7 +205,7 @@
         // Global variables for Supabase instances
         window.supabase = null;
         window.userId = null;
-        window.isAuthReady = false;
+        window.dashboardInitialized = false;
         window.appId = 'default-app-id'; // Global appId, initialized with default
 
         // Utility function for showing messages - now global
@@ -249,51 +249,27 @@
             let finalSupabaseUrl = localSupabaseUrl;
             let finalSupabaseAnonKey = localSupabaseAnonKey;
 
-            // Debugging: Log what is being passed from Canvas globals
-            console.log("Canvas global __supabase_url:", typeof __supabase_url !== 'undefined' ? __supabase_url : 'undefined');
-            console.log("Canvas global __supabase_anon_key:", typeof __supabase_anon_key !== 'undefined' ? (__supabase_anon_key.substring(0, 10) + '...') : 'undefined');
-
-
             // Check if Canvas global variables are provided and valid
             if (typeof __supabase_url !== 'undefined' && typeof __supabase_url === 'string' && __supabase_url.trim() !== '') {
                 finalSupabaseUrl = __supabase_url;
-                console.log("initSupabaseAndAuth: Using Supabase URL from Canvas globals.");
-            } else {
-                console.log("initSupabaseAndAuth: __supabase_url not found or invalid in Canvas globals. Using local default.");
             }
-
             if (typeof __supabase_anon_key !== 'undefined' && typeof __supabase_anon_key === 'string' && __supabase_anon_key.trim() !== '') {
                 finalSupabaseAnonKey = __supabase_anon_key;
-                console.log("initSupabaseAndAuth: Using Supabase Anon Key from Canvas globals.");
-            } else {
-                console.log("initSupabaseAndAuth: __supabase_anon_key not found or invalid in Canvas globals. Using local default.");
             }
-
             if (typeof __app_id !== 'undefined' && typeof __app_id === 'string' && __app_id.trim() !== '') {
                 window.appId = __app_id;
-                console.log("initSupabaseAndAuth: App ID loaded from Canvas globals:", window.appId);
-            } else {
-                console.log("initSupabaseAndAuth: __app_id not found or invalid. Using default appId:", window.appId);
             }
             
-            // Log the final determined keys before checking for placeholders
-            console.log(`initSupabaseAndAuth: Final Supabase URL a ser usado: ${finalSupabaseUrl}`);
-            console.log(`initSupabaseAndAuth: Final Supabase Anon Key a ser usado: ${finalSupabaseAnonKey.substring(0, 10)}... (truncado por segurança)`);
-
-
             // Check if user has replaced placeholders for local development
             const defaultSupabaseUrlPlaceholder = "https://your-project-id.supabase.co"; // This is the placeholder URL
             const defaultSupabaseAnonKeyPlaceholder = "YOUR_SUPABASE_ANON_KEY_HERE_FROM_SUPABASE_DASHBOARD"; // This is the placeholder key
 
             if (finalSupabaseUrl === defaultSupabaseUrlPlaceholder || finalSupabaseAnonKey === defaultSupabaseAnonKeyPlaceholder) {
-                console.error("initSupabaseAndAuth: ERRO CRÍTICO: Supabase URL ou Chave Anon não configurados. Por favor, atualize os placeholders no código ou garanta que as variáveis do Canvas estão definidas.");
-                window.showMessage("Erro: Credenciais do Supabase ausentes ou padrão. Por favor, edite o código para inserir o seu URL e Chave Anon reais do Supabase. Verifique os comentários na secção 'CONFIGURAÇÃO DO SUPABASE' no script!", "error");
-                window.isAuthReady = true; // Mark as ready to avoid infinite loading, but auth will fail
-
-                // Display a prominent warning on the login page itself
+                console.error("initSupabaseAndAuth: ERRO CRÍTICO: Supabase URL ou Chave Anon não configurados.");
+                window.showMessage("Erro: Credenciais do Supabase ausentes. Por favor, edite o código para inserir o seu URL e Chave Anon reais do Supabase.", "error");
                 const loginErrorMessageDiv = document.getElementById('login-error-message');
                 if (loginErrorMessageDiv) {
-                    loginErrorMessageDiv.textContent = "ERRO: Credenciais do Supabase não configuradas. Por favor, edite o código para inserir o seu URL e Chave Anon reais.";
+                    loginErrorMessageDiv.textContent = "ERRO: Credenciais do Supabase não configuradas.";
                     loginErrorMessageDiv.classList.remove('hidden');
                 }
                 return;
@@ -303,76 +279,54 @@
             window.supabase = createClient(finalSupabaseUrl, finalSupabaseAnonKey);
             console.log("initSupabaseAndAuth: Supabase client created.");
 
-
             if (!window.supabase) {
                 console.error("initSupabaseAndAuth: Supabase client failed to initialize.");
                 window.showMessage("Erro: Falha ao inicializar o Supabase.", "error");
-                window.isAuthReady = true;
                 return;
             }
 
-            // Listen for auth changes
+            // Listen for auth changes - This is the single source of truth for auth UI
             window.supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Supabase auth state changed:', event, session);
+                console.log('Supabase auth state changed:', { event, session });
+
+                const loginPage = document.getElementById('login-page');
+                const dashboardPage = document.getElementById('dashboard-page');
+                const userIdDisplay = document.getElementById('user-id-display');
+
                 if (session) {
+                    // User is logged in
                     window.userId = session.user.id;
-                    console.log('Supabase User ID obtained:', window.userId);
-                    const userIdDisplay = document.getElementById('user-id-display');
                     if (userIdDisplay) {
                         userIdDisplay.textContent = `ID do Utilizador: ${window.userId}`;
-                        console.log('User ID display updated to:', userIdDisplay.textContent);
-                    } else {
-                        console.warn('user-id-display element not found yet.');
+                    }
+                    
+                    // Show dashboard and hide login
+                    loginPage.classList.remove('active');
+                    dashboardPage.classList.add('active');
+
+                    // Initialize dashboard only once
+                    if (!window.dashboardInitialized) {
+                        console.log(`Initializing dashboard due to auth event: ${event}`);
+                        window.initializeDashboard();
+                        window.dashboardInitialized = true;
                     }
                 } else {
+                    // User is logged out
                     window.userId = null;
-                    console.log('No Supabase user session.');
-                    const userIdDisplay = document.getElementById('user-id-display');
                     if (userIdDisplay) {
                         userIdDisplay.textContent = `ID do Utilizador: Não autenticado`;
                     }
-                }
-                window.isAuthReady = true;
-                console.log('Auth process finished. isAuthReady:', window.isAuthReady);
-                // If dashboard is already active and not initialized, initialize it now
-                if (document.getElementById('dashboard-page').classList.contains('active') && !window.dashboardInitialized) {
-                    console.log('initSupabaseAndAuth: Calling initializeDashboard from onAuthStateChange.');
-                    window.initializeDashboard();
-                    window.dashboardInitialized = true;
+
+                    // Show login and hide dashboard
+                    loginPage.classList.add('active');
+                    dashboardPage.classList.remove('active');
+                    window.dashboardInitialized = false; // Reset dashboard state for next login
                 }
             });
-
-            // Check current session immediately after setting up listener
-            const { data: { session } = { data: { session: null } } } = await window.supabase.auth.getSession();
-            if (session) {
-                window.userId = session.user.id;
-                console.log('initSupabaseAndAuth: Existing session found for User ID:', window.userId);
-                const userIdDisplay = document.getElementById('user-id-display');
-                if (userIdDisplay) {
-                    userIdDisplay.textContent = `ID do Utilizador: ${window.userId}`;
-                }
-            } else {
-                window.userId = null;
-                console.log('initSupabaseAndAuth: No existing Supabase session.');
-                const userIdDisplay = document.getElementById('user-id-display');
-                if (userIdDisplay) {
-                    userIdDisplay.textContent = `ID do Utilizador: Não autenticado`;
-                }
-            }
-            window.isAuthReady = true; // Mark as ready after initial session check
-            console.log('initSupabaseAndAuth: Initial session check complete. isAuthReady:', window.isAuthReady);
-            if (document.getElementById('dashboard-page').classList.contains('active') && !window.dashboardInitialized) {
-                console.log('initSupabaseAndAuth: Calling initializeDashboard after initial session check.');
-                window.initializeDashboard();
-                window.dashboardInitialized = true;
-            }
         };
 
-        // Call the new initialization function once the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOMContentLoaded fired."); // Debugging line
-            window.initSupabaseAndAuth();
-        });
+        // Call the initialization function once the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', window.initSupabaseAndAuth);
     </script>
 </head>
 <body>
@@ -433,28 +387,36 @@
                     <img src="https://i.imgur.com/0ooTC9z.png" alt="Logo Círculos" class="h-10 w-auto">
                     <span id="user-id-display" class="ml-4 text-xs text-gray-500">ID do Utilizador: A carregar...</span>
                 </div>
-                <nav class="flex items-center h-full text-sm font-medium text-gray-600">
-                    <a href="#" id="nav-dashboard" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Dashboard</a>
-                    <div class="dropdown relative h-16 flex items-center">
-                        <button id="nav-catalogo" class="nav-link h-full flex items-center px-4 hover:bg-gray-100 transition-colors gap-2 border-b-2 border-transparent">
-                            <span>Registos</span><i data-lucide="chevron-down" class="w-4 h-4"></i>
-                        </button>
-                        <div class="dropdown-menu absolute left-0 mt-16 w-56 bg-white rounded-b-md shadow-lg py-1 z-30 text-gray-800 border-t">
-                            <a href="#" id="link-produtos" class="block px-4 py-2 text-sm hover:bg-gray-100">Produtos</a>
-                            <a href="#" id="link-clientes-fornecedores" class="block px-4 py-2 text-sm hover:bg-gray-100">Clientes e Fornecedores</a>
+                <div class="flex items-center gap-6">
+                    <nav class="flex items-center h-full text-sm font-medium text-gray-600">
+                        <a href="#" id="nav-dashboard" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Dashboard</a>
+                        <div class="dropdown relative h-16 flex items-center">
+                            <button id="nav-catalogo" class="nav-link h-full flex items-center px-4 hover:bg-gray-100 transition-colors gap-2 border-b-2 border-transparent">
+                                <span>Registos</span><i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </button>
+                            <div class="dropdown-menu absolute left-0 mt-16 w-56 bg-white rounded-b-md shadow-lg py-1 z-30 text-gray-800 border-t">
+                                <a href="#" id="link-produtos" class="block px-4 py-2 text-sm hover:bg-gray-100">Produtos</a>
+                                <a href="#" id="link-clientes-fornecedores" class="block px-4 py-2 text-sm hover:bg-gray-100">Clientes e Fornecedores</a>
+                            </div>
                         </div>
+                        <a href="#" id="nav-vendas" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Vendas</a>
+                        <a href="#" id="nav-estoque" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Inventário</a>
+                        <a href="#" id="nav-financeiro" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Financeiro</a>
+                    </nav>
+                    <div class="h-16 flex items-center border-l pl-6">
+                         <button id="logout-btn" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-red-500 transition-colors duration-200 p-2 rounded-md hover:bg-red-50">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span>Sair</span>
+                        </button>
                     </div>
-                    <a href="#" id="nav-vendas" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Vendas</a>
-                    <a href="#" id="nav-estoque" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Inventário</a>
-                    <a href="#" id="nav-financeiro" class="nav-link h-16 flex items-center px-4 hover:bg-gray-100 transition-colors border-b-2 border-transparent">Financeiro</a>
-                </nav>
+                </div>
             </div>
         </header>
         <main id="page-content" class="flex-1 overflow-y-auto bg-gray-50 p-6"></main> <!-- Added p-6 for spacing -->
         <div id="modal-container"></div>
     </div>
 
-    <!-- MODAL DE REGISTO (MOVIDO PARA FORA DO DASHBOARD) -->
+    <!-- MODAIS GLOBAIS (SEMPRE PRESENTES NO DOM, APENAS ESCONDIDOS) -->
     <div id="register-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
         <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -484,14 +446,80 @@
             </form>
         </div>
     </div>
+    
+    <div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Não</option><option>Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
+    <div id="import-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl p-6"><div class="flex justify-between items-center border-b pb-3 mb-4"><h3 class="text-xl font-semibold text-gray-800">Importar Produtos em Massa</h3><button id="import-modal-close" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="space-y-6 mt-4"><div><h4 class="font-semibold text-gray-700">Passo 1: Baixe o nosso modelo</h4><p class="text-sm text-gray-600 mt-1">Para garantir que os seus dados são importados corretamente, use o nosso ficheiro modelo. Preencha-o com os seus produtos antes de carregar.</p><button id="download-template-btn" class="mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-md flex items-center gap-2 transition-colors duration-200 border border-gray-300"><i data-lucide="download-cloud" class="w-4 h-4"></i> Baixar Modelo (CSV)</button></div><div class="border-t border-gray-200"></div><div><h4 class="font-semibold text-gray-700">Passo 2: Carregue o seu ficheiro preenchido</h4><p class="text-sm text-gray-600 mt-1">Formatos suportados: CSV, XLS, XLSX.</p><div id="import-drop-area" class="mt-3 flex justify-center items-center w-full h-32 px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 bg-gray-50"><div class="text-center"><i data-lucide="upload-cloud" class="mx-auto h-10 w-10 text-gray-400"></i><p id="import-file-text" class="mt-2 text-sm text-gray-600"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p><input id="import-file-input" type="file" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"></div></div><p id="import-file-name" class="text-sm text-gray-500 mt-2"></p></div></div><div class="flex justify-end items-center border-t pt-4 mt-6 gap-4"><button id="import-modal-cancel" class="border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button id="process-import-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200 disabled:bg-gray-400" disabled>Importar Produtos</button></div></div></div>
+    <div id="date-picker-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+        <div class="date-picker-modal-content w-full max-w-4xl p-6 flex gap-6">
+            <div class="flex-1 flex flex-col space-y-4">
+                <div class="flex items-center justify-between">
+                    <button id="prev-month-left" class="calendar-nav-btn"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <h4 id="month-display-left" class="text-md font-semibold text-gray-300"></h4>
+                    <button id="next-month-left" class="calendar-nav-btn"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
+                <div class="grid grid-cols-7 text-center text-xs text-gray-400 font-medium">
+                    <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div id="calendar-grid-left" class="grid grid-cols-7 gap-1">
+                    <!-- Days will be generated here -->
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col space-y-4">
+                <div class="flex items-center justify-between">
+                    <button id="prev-month-right" class="calendar-nav-btn"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <h4 id="month-display-right" class="text-md font-semibold text-gray-300"></h4>
+                    <button id="next-month-right" class="calendar-nav-btn"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
+                <div class="grid grid-cols-7 text-center text-xs text-gray-400 font-medium">
+                    <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div id="calendar-grid-right" class="grid grid-cols-7 gap-1">
+                    <!-- Days will be generated here -->
+                </div>
+            </div>
+            <div class="w-1/4 flex flex-col space-y-2 ml-6">
+                <h5 class="text-sm font-semibold mb-2">Períodos Rápidos</h5>
+                <button class="quick-select-btn" data-preset="today">Hoje</button>
+                <button class="quick-select-btn" data-preset="this_week">Esta semana</button>
+                <button class="quick-select-btn" data-preset="last_week">Semana passada</button>
+                <button class="quick-select-btn" data-preset="this_month">Este mês</button>
+                <button class="quick-select-btn" data-preset="last_month">Mês passado</button>
+                <button class="quick-select-btn mt-4 active-preset" data-preset="custom">Período customizado</button>
+                <div class="flex-grow"></div>
+                <div class="flex gap-2 mt-4">
+                    <button id="date-picker-cancel-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-1.5 px-3 rounded-md text-sm transition-colors duration-200">Cancelar</button>
+                    <button id="date-picker-filter-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm transition-colors duration-200">Filtrar</button>
+                </div>
+            </div>
+            <button id="date-picker-close-btn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 p-1.5 rounded-md"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+    </div>
+
 
     <script type="module">
         // This function will be called after Supabase init and auth attempt
         window.initializeDashboard = () => {
             console.log('initializeDashboard started.');
             const pageContent = document.getElementById('page-content');
-            const modalContainer = document.getElementById('modal-container');
             const navLinks = document.querySelectorAll('.nav-link');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    console.log('Logout button clicked.');
+                    window.showMessage('A terminar a sessão...', 'info');
+                    const { error } = await window.supabase.auth.signOut();
+                    if (error) {
+                        console.error('Error signing out:', error);
+                        window.showMessage(`Erro ao terminar a sessão: ${error.message}`, 'error');
+                    } else {
+                        window.showMessage('Sessão terminada com sucesso.', 'success');
+                        // The onAuthStateChange listener will handle the UI redirection automatically.
+                    }
+                });
+            }
+
 
             // Initial dummy data for clients and suppliers (will be replaced by Supabase later)
             let clientsAndSuppliers = [
@@ -510,71 +538,31 @@
                 }
             };
 
-            const showPage = (pageHtml, navId, scriptRunner, modalHtml = '') => {
-                // Esta função carrega o conteúdo HTML de uma "página" separada na área principal do dashboard.
-                // Isso garante que cada secção de navegação (Dashboard, Produtos, Clientes, etc.)
-                // tenha a sua própria área de conteúdo distinta.
-                console.log(`showPage called for navId: ${navId}`); // Debugging: track page changes
+            const showPage = (pageHtml, navId, scriptRunner) => {
+                console.log(`showPage called for navId: ${navId}`);
                 pageContent.innerHTML = pageHtml;
-                // Adiciona o HTML do modal ao modalContainer apenas se não for o modal de registo.
-                // O modal de registo é uma parte estática da estrutura do body.
-                if (modalHtml && !modalHtml.includes('id="register-modal"')) {
-                    modalContainer.innerHTML = modalHtml; 
-                } else {
-                    modalContainer.innerHTML = ''; // Limpa outros modais, se existirem
-                }
                 setActiveLink(navId);
-                window.lucide.createIcons(); // Re-renderiza os ícones Lucide para novo conteúdo
+                window.lucide.createIcons();
                 if(scriptRunner) scriptRunner();
             };
             
             // Function to run the Product System specific script
             const runProductSystemScript = () => {
-                console.log('runProductSystemScript started. Supabase database integration pending.');
-                try { // Start try block
+                console.log('runProductSystemScript started.');
+                try { 
                     const tableBody = document.getElementById('product-table-body');
-                    if (!tableBody) { console.error('Error: product-table-body not found.'); return; }
-                    
                     const addProductBtn = document.getElementById('add-product-btn');
-                    if (!addProductBtn) { console.error('Error: add-product-btn not found.'); return; }
-
                     const productModal = document.getElementById('product-modal');
-                    if (!productModal) { console.error('Error: product-modal not found.'); return; }
-                    
                     const productForm = document.getElementById('product-form');
-                    if (!productForm) { console.error('Error: product-form not found.'); return; }
-                    
                     const modalCloseButton = productModal.querySelector('#product-modal-header-close'); 
-                    if (!modalCloseButton) { console.error('Error: product-modal-header-close not found.'); return; }
-
                     const cancelBtn = document.getElementById('product-modal-cancel');
-                    if (!cancelBtn) { console.error('Error: product-modal-cancel not found.'); return; }
-
                     const generateBarcodeBtn = document.getElementById('generate-barcode-btn');
-                    if (!generateBarcodeBtn) { console.error('Error: generate-barcode-btn not found.'); return; }
-
                     const generateGtinEanBtn = document.getElementById('generate-gtinean-btn'); 
-                    if (!generateGtinEanBtn) { console.error('Error: generate-gtinean-btn not found.'); return; }
-                    
                     const productImageInput = document.getElementById('product-image-input');
-                    if (!productImageInput) { console.error('Error: product-image-input not found.'); return; }
-
                     const productImagePreview = document.getElementById('product-image-preview');
-                    if (!productImagePreview) { console.error('Error: product-image-preview not found.'); return; }
-
                     const imageDropArea = productModal.querySelector('#image-drop-area'); 
-                    if (!imageDropArea) { console.error('Error: image-drop-area not found.'); return; }
-
                     const addImageUrlInput = productModal.querySelector('#image-url-input');
-                    if (!addImageUrlInput) { console.error('Error: image-url-input not found.'); return; }
-
-                    const addImageUrlBtn = productModal.querySelector('#add-image-url-btn');
-                    if (!addImageUrlBtn) { console.error('Error: add-image-url-btn not found.'); return; }
-
-                    const MAX_IMAGES = 4;
-                    let productImages = []; // Array to store image URLs/Base64
-
-                    // Filter elements
+                    const addImageUrlBtn = document.getElementById('add-image-url-btn');
                     const filterSituacao = document.getElementById('filter-situacao');
                     const filterTags = document.getElementById('filter-tags');
                     const filterCategoria = document.getElementById('filter-categoria');
@@ -582,10 +570,7 @@
                     const filterTipo = document.getElementById('filter-tipo');
                     const filterMarca = document.getElementById('filter-marca');
                     const clearFiltersBtn = document.getElementById('clear-filters-btn');
-                    const filterChipsContainer = document.getElementById('filter-chips-container'); // New element
-
-
-                    // Date Picker elements
+                    const filterChipsContainer = document.getElementById('filter-chips-container');
                     const dateRangeDisplay = document.getElementById('date-range-display');
                     const datePickerModal = document.getElementById('date-picker-modal');
                     const datePickerCloseBtn = document.getElementById('date-picker-close-btn');
@@ -601,54 +586,23 @@
                     const nextMonthBtnLeft = document.getElementById('next-month-left');
                     const prevMonthBtnRight = document.getElementById('prev-month-right');
                     const nextMonthBtnRight = document.getElementById('next-month-right');
-
-                    // Check if filter elements exist
-                    if (!filterSituacao) console.error('Error: filter-situacao not found.');
-                    if (!filterTags) console.error('Error: filter-tags not found.');
-                    if (!filterCategoria) console.error('Error: filter-categoria not found.');
-                    if (!filterNCM) console.error('Error: filter-ncm not found.');
-                    if (!filterTipo) console.error('Error: filter-tipo not found.');
-                    if (!filterMarca) console.error('Error: filter-marca not found.');
-                    if (!clearFiltersBtn) console.error('Error: clear-filters-btn not found.');
-                    if (!filterChipsContainer) console.error('Error: filter-chips-container not found.');
-                    
-                    // Import/Export buttons
                     const importProductsBtn = document.getElementById('import-products-btn');
                     const exportProductsBtn = document.getElementById('export-products-btn');
-
-                    if (!importProductsBtn) console.error('Error: import-products-btn not found.');
-                    if (!exportProductsBtn) console.error('Error: export-products-btn not found.');
-
-                    // New search and action buttons in the top bar
                     const productSearchInput = document.getElementById('product-search-input');
                     const toggleFilterSidebarBtn = document.getElementById('toggle-filter-sidebar-btn');
                     const lockBtn = document.getElementById('lock-product-btn');
                     const printerBtn = document.getElementById('printer-product-btn');
                     const trashBtn = document.getElementById('trash-product-btn');
-                    const refreshBtn = document.getElementById('refresh-product-btn'); // New refresh button
-                    const viewOptionsBtn = document.getElementById('view-options-product-btn'); // New view options button
-
-
-                    if (!productSearchInput) console.error('Error: product-search-input not found.');
-                    if (!toggleFilterSidebarBtn) console.error('Error: toggle-filter-sidebar-btn not found.');
-                    if (!lockBtn) console.error('Error: lock-product-btn not found.');
-                    if (!printerBtn) { console.error('Error: printer-product-btn not found.'); return; }
-                    if (!trashBtn) console.error('Error: trash-product-btn not found.');
-                    if (!refreshBtn) console.error('Error: refresh-product-btn not found.');
-                    if (!viewOptionsBtn) console.error('Error: view-options-product-btn not found.');
-
-                    // Table selection elements
+                    const refreshBtn = document.getElementById('refresh-product-btn');
+                    const viewOptionsBtn = document.getElementById('view-options-product-btn');
                     const selectAllCheckbox = document.getElementById('select-all-products');
-                    if (!selectAllCheckbox) console.error('Error: select-all-products not found.');
 
+                    const MAX_IMAGES = 4;
+                    let productImages = [];
 
-                    // Placeholder for Supabase data loading
-                    tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">A carregar produtos do Supabase... (Integração da base de dados pendente)</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-400">A carregar produtos...</td></tr>';
 
-
-                    // --- Date Picker Logic ---
                     const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-                    const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
                     let currentMonthLeft = new Date();
                     let selectedStartDate = null;
                     let selectedEndDate = null;
@@ -662,35 +616,33 @@
                     const updateDateRangeDisplay = () => {
                         const start = searchDateStartInput.value;
                         const end = searchDateEndInput.value;
-                        if (start && end) {
-                            dateRangeDisplay.textContent = `${formatDate(start)} - ${formatDate(end)}`;
-                        } else if (start) {
-                            dateRangeDisplay.textContent = `${formatDate(start)} - Fim`;
-                        } else if (end) {
-                            dateRangeDisplay.textContent = `Início - ${formatDate(end)}`;
-                        } else {
-                            dateRangeDisplay.textContent = 'Data do Pedido';
+                        if(dateRangeDisplay) {
+                            if (start && end) {
+                                dateRangeDisplay.textContent = `${formatDate(start)} - ${formatDate(end)}`;
+                            } else if (start) {
+                                dateRangeDisplay.textContent = `${formatDate(start)} - Fim`;
+                            } else if (end) {
+                                dateRangeDisplay.textContent = `Início - ${formatDate(end)}`;
+                            } else {
+                                dateRangeDisplay.textContent = 'Data do Pedido';
+                            }
                         }
                     };
 
-                    const renderCalendar = (monthDate, calendarGrid, monthDisplay, isRightCalendar = false) => {
+                    const renderCalendar = (monthDate, calendarGrid, monthDisplay) => {
+                        if (!calendarGrid || !monthDisplay) return;
                         calendarGrid.innerHTML = '';
                         monthDisplay.textContent = `${months[monthDate.getMonth()]} ${monthDate.getFullYear()}`;
 
                         const firstDayOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-                        const lastDayOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-
-                        // Calculate the start day of the calendar grid (Sunday of the first week)
                         const startDay = new Date(firstDayOfMonth);
                         startDay.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
 
-                        // Generate days
-                        for (let i = 0; i < 42; i++) { // 6 weeks * 7 days
+                        for (let i = 0; i < 42; i++) {
                             const day = new Date(startDay);
                             day.setDate(startDay.getDate() + i);
-
                             const dayElement = document.createElement('div');
                             dayElement.classList.add('calendar-day');
                             dayElement.textContent = day.getDate();
@@ -701,16 +653,11 @@
                             } else {
                                 dayElement.classList.add('other-month');
                             }
-
                             if (day.getTime() === today.getTime()) {
                                 dayElement.classList.add('today');
                             }
-
-                            // Check for selection
-                            if (selectedStartDate && selectedEndDate) {
-                                if (day.getTime() >= new Date(selectedStartDate).getTime() && day.getTime() <= new Date(selectedEndDate).getTime()) {
-                                    dayElement.classList.add('range-selected');
-                                }
+                            if (selectedStartDate && selectedEndDate && day.getTime() >= new Date(selectedStartDate).getTime() && day.getTime() <= new Date(selectedEndDate).getTime()) {
+                                dayElement.classList.add('range-selected');
                             }
                             if (selectedStartDate && day.getTime() === new Date(selectedStartDate).getTime()) {
                                 dayElement.classList.add('selected');
@@ -719,19 +666,18 @@
                                 dayElement.classList.add('selected');
                             }
                             
-
                             dayElement.addEventListener('click', () => {
                                 const clickedDate = day.toISOString().split('T')[0];
                                 if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
                                     selectedStartDate = clickedDate;
-                                    selectedEndDate = null; // Reset end date for new selection
+                                    selectedEndDate = null;
                                 } else if (new Date(clickedDate).getTime() < new Date(selectedStartDate).getTime()) {
                                     selectedEndDate = selectedStartDate;
                                     selectedStartDate = clickedDate;
                                 } else {
                                     selectedEndDate = clickedDate;
                                 }
-                                renderCalendars(); // Re-render both calendars to show selection
+                                renderCalendars();
                             });
                             calendarGrid.appendChild(dayElement);
                         }
@@ -741,16 +687,11 @@
                         const monthDateRight = new Date(currentMonthLeft);
                         monthDateRight.setMonth(currentMonthLeft.getMonth() + 1);
                         renderCalendar(currentMonthLeft, calendarGridLeft, monthDisplayLeft);
-                        renderCalendar(monthDateRight, calendarGridRight, monthDisplayRight, true);
+                        renderCalendar(monthDateRight, calendarGridRight, monthDisplayRight);
                     };
 
-                    const navigateMonth = (direction, isLeftCalendar) => {
-                        if (isLeftCalendar) {
-                            currentMonthLeft.setMonth(currentMonthLeft.getMonth() + direction);
-                        } else {
-                            // Navigating right calendar, impacts both to keep them sequential
-                            currentMonthLeft.setMonth(currentMonthLeft.getMonth() + direction);
-                        }
+                    const navigateMonth = (direction) => {
+                        currentMonthLeft.setMonth(currentMonthLeft.getMonth() + direction);
                         renderCalendars();
                     };
                     
@@ -758,801 +699,394 @@
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         let start = null;
-                        let end = today; // Default end date to today for most presets
+                        let end = today;
 
-                        if (preset === 'today') {
-                            start = today;
-                        } else if (preset === 'this_week') {
+                        if (preset === 'today') start = today;
+                        else if (preset === 'this_week') {
                             start = new Date(today);
-                            start.setDate(today.getDate() - today.getDay()); // Sunday
+                            start.setDate(today.getDate() - today.getDay());
                         } else if (preset === 'last_week') {
                             end = new Date(today);
-                            end.setDate(today.getDate() - today.getDay() - 1); // Saturday of last week
+                            end.setDate(today.getDate() - today.getDay() - 1);
                             start = new Date(end);
-                            start.setDate(end.getDate() - 6); // Sunday of last week
+                            start.setDate(end.getDate() - 6);
                         } else if (preset === 'this_month') {
                             start = new Date(today.getFullYear(), today.getMonth(), 1);
                         } else if (preset === 'last_month') {
-                            end = new Date(today.getFullYear(), today.getMonth(), 0); // Last day of previous month
-                            start = new Date(end.getFullYear(), end.getMonth(), 1); // First day of previous month
+                            end = new Date(today.getFullYear(), today.getMonth(), 0);
+                            start = new Date(end.getFullYear(), end.getMonth(), 1);
                         }
 
-                        if (start) selectedStartDate = start.toISOString().split('T')[0];
-                        if (end) selectedEndDate = end.toISOString().split('T')[0];
-                        else selectedEndDate = null;
+                        selectedStartDate = start ? start.toISOString().split('T')[0] : null;
+                        selectedEndDate = end ? end.toISOString().split('T')[0] : null;
 
-                        // Ensure start is always before or equal to end if both are set
-                        if (selectedStartDate && selectedEndDate && new Date(selectedStartDate).getTime() > new Date(selectedEndDate).getTime()) {
-                            const temp = selectedStartDate;
-                            selectedStartDate = selectedEndDate;
-                            selectedEndDate = temp;
-                        }
-                        
-                        // Update currentMonthLeft to show the selected range in the calendar modal
                         if (selectedStartDate) {
                             currentMonthLeft = new Date(selectedStartDate);
-                            currentMonthLeft.setDate(1); // Set to first day to avoid issues with month length
-                        } else {
-                            currentMonthLeft = new Date();
                             currentMonthLeft.setDate(1);
                         }
                         renderCalendars();
-                        
-                        // Highlight active preset button
                         document.querySelectorAll('.quick-select-btn').forEach(btn => btn.classList.remove('active-preset'));
                         const activeBtn = document.querySelector(`.quick-select-btn[data-preset="${preset}"]`);
                         if (activeBtn) activeBtn.classList.add('active-preset');
                     };
 
-                    // Event listeners for date picker
                     dateRangeDisplay?.addEventListener('click', () => {
                         if (datePickerModal) {
-                            // Initialize selected dates from current filter inputs if available
-                            if (searchDateStartInput.value) {
-                                selectedStartDate = searchDateStartInput.value;
-                                currentMonthLeft = new Date(selectedStartDate);
-                                currentMonthLeft.setDate(1);
-                            } else {
-                                selectedStartDate = null;
-                                currentMonthLeft = new Date();
-                                currentMonthLeft.setDate(1);
-                            }
-                            if (searchDateEndInput.value) selectedEndDate = searchDateEndInput.value;
-                            else selectedEndDate = null;
-
+                            selectedStartDate = searchDateStartInput.value || null;
+                            selectedEndDate = searchDateEndInput.value || null;
+                            if(selectedStartDate) currentMonthLeft = new Date(selectedStartDate);
                             renderCalendars();
                             datePickerModal.classList.remove('hidden');
                         }
                     });
-                    datePickerCloseBtn?.addEventListener('click', () => { datePickerModal?.classList.add('hidden'); });
-                    datePickerCancelBtn?.addEventListener('click', () => { datePickerModal?.classList.add('hidden'); });
+
+                    datePickerCloseBtn?.addEventListener('click', () => datePickerModal?.classList.add('hidden'));
+                    datePickerCancelBtn?.addEventListener('click', () => datePickerModal?.classList.add('hidden'));
                     datePickerFilterBtn?.addEventListener('click', () => {
                         searchDateStartInput.value = selectedStartDate || '';
                         searchDateEndInput.value = selectedEndDate || '';
                         updateDateRangeDisplay();
                         datePickerModal?.classList.add('hidden');
-                        applyFilters(); // Apply filters with new date range
+                        applyFilters();
                     });
-                    prevMonthBtnLeft?.addEventListener('click', () => navigateMonth(-1, true));
-                    nextMonthBtnLeft?.addEventListener('click', () => navigateMonth(1, true));
-                    prevMonthBtnRight?.addEventListener('click', () => navigateMonth(-1, false)); // Clicking right prev button
-                    nextMonthBtnRight?.addEventListener('click', () => navigateMonth(1, false)); // Clicking right next button
-
-                    // Quick select buttons
+                    prevMonthBtnLeft?.addEventListener('click', () => navigateMonth(-1));
+                    nextMonthBtnLeft?.addEventListener('click', () => navigateMonth(1));
+                    prevMonthBtnRight?.addEventListener('click', () => navigateMonth(-1));
+                    nextMonthBtnRight?.addEventListener('click', () => navigateMonth(1));
                     document.querySelectorAll('.quick-select-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            setPresetDateRange(btn.dataset.preset);
-                        });
+                        btn.addEventListener('click', () => setPresetDateRange(btn.dataset.preset));
                     });
 
-                    // Initial render on script load
                     updateDateRangeDisplay();
                     renderCalendars();
-                    // --- End Date Picker Logic ---
 
-
-                    // Function to render filter chips
                     const renderFilterChips = (appliedFilters) => {
-                        filterChipsContainer.innerHTML = ''; // Clear existing chips
-
-                        if (appliedFilters.situacao) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Situação: ${appliedFilters.situacao} <button class="ml-1 text-gray-300 hover:text-white" data-filter="situacao"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.tags) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Tags: ${appliedFilters.tags} <button class="ml-1 text-gray-300 hover:text-white" data-filter="tags"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.categoria) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Categoria: ${appliedFilters.categoria} <button class="ml-1 text-gray-300 hover:text-white" data-filter="categoria"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.ncm) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `NCM: ${appliedFilters.ncm} <button class="ml-1 text-gray-300 hover:text-white" data-filter="ncm"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.tipo) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Tipo: ${appliedFilters.tipo} <button class="ml-1 text-gray-300 hover:text-white" data-filter="tipo"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.marca) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Marca: ${appliedFilters.marca} <button class="ml-1 text-gray-300 hover:text-white" data-filter="marca"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.dataInicio || appliedFilters.dataFim) {
-                            const dateRangeText = `${formatDate(appliedFilters.dataInicio || '')} - ${formatDate(appliedFilters.dataFim || '')}`;
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Datas: ${dateRangeText} <button class="ml-1 text-gray-300 hover:text-white" data-filter="datas"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-                        if (appliedFilters.termoPesquisa) {
-                            const chip = document.createElement('span');
-                            chip.className = 'filter-chip';
-                            chip.innerHTML = `Pesquisa: "${appliedFilters.termoPesquisa}" <button class="ml-1 text-gray-300 hover:text-white" data-filter="termoPesquisa"><i data-lucide="x" class="w-3 h-3"></i></button>`;
-                            filterChipsContainer.appendChild(chip);
-                        }
-
-                        // Add "Limpar" chip if any filters are applied
-                        if (Object.keys(appliedFilters).length > 0) {
+                        filterChipsContainer.innerHTML = '';
+                        Object.entries(appliedFilters).forEach(([key, value]) => {
+                            if (value) {
+                                const chip = document.createElement('span');
+                                chip.className = 'filter-chip';
+                                chip.innerHTML = `${key}: ${value} <button class="ml-1 text-gray-300 hover:text-white" data-filter="${key}"><i data-lucide="x" class="w-3 h-3"></i></button>`;
+                                filterChipsContainer.appendChild(chip);
+                            }
+                        });
+                        if (Object.values(appliedFilters).some(v => v)) {
                             const clearChip = document.createElement('button');
                             clearChip.className = 'filter-chip-clear ml-2 text-sm font-semibold hover:text-white';
                             clearChip.innerHTML = `<i data-lucide="x" class="w-4 h-4 mr-1"></i> Limpar`;
                             clearChip.addEventListener('click', clearFilters);
                             filterChipsContainer.appendChild(clearChip);
                         }
-
-                        window.lucide.createIcons(); // Re-render Lucide icons for new chips
+                        window.lucide.createIcons();
                     };
 
-
-                    // Function to apply filters (placeholder)
                     const applyFilters = () => {
                         console.log('Aplicando filtros...');
-                        const appliedFilters = {};
-                        if (filterSituacao?.value) appliedFilters.situacao = filterSituacao.value;
-                        if (filterTags?.value) appliedFilters.tags = filterTags.value;
-                        if (filterCategoria?.value) appliedFilters.categoria = filterCategoria.value;
-                        if (filterNCM?.value) appliedFilters.ncm = filterNCM.value;
-                        if (filterTipo?.value) appliedFilters.tipo = filterTipo.value;
-                        if (filterMarca?.value) appliedFilters.marca = filterMarca.value;
-                        if (searchDateStartInput?.value) appliedFilters.dataInicio = searchDateStartInput.value;
-                        if (searchDateEndInput?.value) appliedFilters.dataFim = searchDateEndInput.value;
-                        if (productSearchInput?.value.trim()) appliedFilters.termoPesquisa = productSearchInput.value.trim();
-
-                        renderFilterChips(appliedFilters); // Update filter chips display
-
-                        if (Object.keys(appliedFilters).length > 0) {
-                            window.showMessage(`Filtros aplicados: ${JSON.stringify(appliedFilters)}. Funcionalidade de filtragem no Supabase pendente.`, "info");
-                        } else {
-                            window.showMessage("Nenhum filtro aplicado. A mostrar todos os produtos. Funcionalidade de filtragem no Supabase pendente.", "info");
-                        }
-                        // Here you would typically fetch data from Supabase based on these filter values
+                        const appliedFilters = {
+                            situacao: filterSituacao?.value,
+                            tags: filterTags?.value,
+                            categoria: filterCategoria?.value,
+                            ncm: filterNCM?.value,
+                            tipo: filterTipo?.value,
+                            marca: filterMarca?.value,
+                            dataInicio: searchDateStartInput?.value,
+                            dataFim: searchDateEndInput?.value,
+                            termoPesquisa: productSearchInput?.value.trim()
+                        };
+                        renderFilterChips(appliedFilters);
+                        window.showMessage("Funcionalidade de filtragem no Supabase pendente.", "info");
                     };
-
 
                     const clearFilters = () => {
                         console.log('A limpar filtros...');
-                        if (filterSituacao) filterSituacao.value = '';
-                        if (filterTags) filterTags.value = '';
-                        if (filterCategoria) filterCategoria.value = '';
-                        if (filterNCM) filterNCM.value = '';
-                        if (filterTipo) filterTipo.value = '';
-                        if (filterMarca) filterMarca.value = '';
-                        if (searchDateStartInput) searchDateStartInput.value = '';
-                        if (searchDateEndInput) searchDateEndInput.value = '';
-                        if (productSearchInput) productSearchInput.value = '';
-                        selectedStartDate = null; // Clear date picker selection
-                        selectedEndDate = null; // Clear date picker selection
-                        updateDateRangeDisplay(); // Update date range display
-                        renderCalendars(); // Re-render calendars without selection
-                        applyFilters(); // Re-apply filters to show all products (empty filters)
+                        [filterSituacao, filterTags, filterCategoria, filterNCM, filterTipo, filterMarca, searchDateStartInput, searchDateEndInput, productSearchInput].forEach(el => { if(el) el.value = ''; });
+                        selectedStartDate = null;
+                        selectedEndDate = null;
+                        updateDateRangeDisplay();
+                        renderCalendars();
+                        applyFilters();
                         window.showMessage("Filtros limpos.", "info");
                     };
 
-                    // Add event listener for clearing individual filter chips
                     filterChipsContainer.addEventListener('click', (e) => {
-                        const target = e.target.closest('button');
-                        if (target && target.dataset.filter) {
+                        const target = e.target.closest('button[data-filter]');
+                        if (target) {
                             const filterToClear = target.dataset.filter;
-                            console.log(`Clearing individual filter: ${filterToClear}`);
-                            if (filterToClear === 'situacao' && filterSituacao) filterSituacao.value = '';
-                            else if (filterToClear === 'tags' && filterTags) filterTags.value = '';
-                            else if (filterToClear === 'categoria' && filterCategoria) filterCategoria.value = '';
-                            else if (filterToClear === 'ncm' && filterNCM) filterNCM.value = '';
-                            else if (filterToClear === 'tipo' && filterTipo) filterTipo.value = '';
-                            else if (filterToClear === 'marca' && filterMarca) filterMarca.value = '';
-                            else if (filterToClear === 'datas') {
-                                if (searchDateStartInput) searchDateStartInput.value = '';
-                                if (searchDateEndInput) searchDateEndInput.value = '';
-                                selectedStartDate = null;
-                                selectedEndDate = null;
+                            const element = document.getElementById(`filter-${filterToClear}`) || document.getElementById(`product-search-input`);
+                            if(element) element.value = '';
+                            if(filterToClear === 'datas') {
+                                searchDateStartInput.value = '';
+                                searchDateEndInput.value = '';
                                 updateDateRangeDisplay();
-                                renderCalendars();
                             }
-                            else if (filterToClear === 'termoPesquisa' && productSearchInput) productSearchInput.value = '';
-                            applyFilters(); // Re-apply filters to update chips and data
+                            applyFilters();
                         }
                     });
 
                     clearFiltersBtn?.addEventListener('click', clearFilters);
-
-
-                    // Event listeners for Import/Export buttons
-                    importProductsBtn?.addEventListener('click', () => {
-                        console.log('Botão Importar Produtos clicado. Simulação de importação.');
-                        window.showMessage("A iniciar processo de importação de produtos... Funcionalidade pendente.", "info");
-                    });
-
-                    exportProductsBtn?.addEventListener('click', () => {
-                        console.log('Botão Exportar Produtos clicado. Simulação de exportação.');
-                        window.showMessage("A preparar exportação de produtos... Funcionalidade pendente.", "info");
-                    });
-
-                    // New search and action button event listeners
-                    productSearchInput?.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            console.log('Pesquisar Produtos acionado com Enter.');
-                            applyFilters(); // Call applyFilters to include text search
-                        }
-                    });
-
+                    productSearchInput?.addEventListener('keypress', (e) => e.key === 'Enter' && applyFilters());
                     toggleFilterSidebarBtn?.addEventListener('click', () => {
-                        const filterSidebar = document.querySelector('aside:first-child'); // Select the first aside (filter sidebar)
+                        const filterSidebar = document.querySelector('aside:first-child');
                         const productSystemContainer = document.querySelector('.product-system-container');
-                        if (filterSidebar && productSystemContainer) {
-                            filterSidebar.classList.toggle('hidden');
-                            if (filterSidebar.classList.contains('hidden')) {
-                                console.log('Barra lateral de filtros escondida.');
-                                // Adjust main content grid to expand if filter sidebar is hidden
-                                productSystemContainer.classList.remove('grid-cols-[288px_1fr_200px]');
-                                productSystemContainer.classList.add('grid-cols-[1fr_200px]');
-                                window.showMessage("Barra lateral de filtros escondida.", "info");
-                            } else {
-                                console.log('Barra lateral de filtros visível.');
-                                // Adjust main content grid to original 3-column layout
-                                productSystemContainer.classList.remove('grid-cols-[1fr_200px]');
-                                productSystemContainer.classList.add('grid-cols-[288px_1fr_200px]');
-                                window.showMessage("Barra lateral de filtros visível.", "info");
-                            }
-                        }
+                        filterSidebar?.classList.toggle('hidden');
+                        productSystemContainer?.classList.toggle('grid-cols-[1fr_200px]', filterSidebar?.classList.contains('hidden'));
+                        productSystemContainer?.classList.toggle('grid-cols-[288px_1fr_200px]', !filterSidebar?.classList.contains('hidden'));
                     });
-
-                    lockBtn?.addEventListener('click', () => {
+                    
+                    const handleBatchAction = (actionName, message) => {
                         const selectedProducts = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.closest('tr').dataset.productId);
                         if (selectedProducts.length > 0) {
-                            console.log(`Bloquear produtos selecionados: ${selectedProducts.join(', ')}. Simulação de bloqueio.`);
-                            window.showMessage(`A bloquear ${selectedProducts.length} produtos. Funcionalidade pendente.`, "info");
+                            console.log(`${actionName} produtos: ${selectedProducts.join(', ')}`);
+                            window.showMessage(`${message} ${selectedProducts.length} produtos. Funcionalidade pendente.`, "info");
                         } else {
-                            window.showMessage("Nenhum produto selecionado para bloquear.", "warning");
+                            window.showMessage(`Nenhum produto selecionado para ${actionName.toLowerCase()}.`, "warning");
                         }
-                    });
+                    };
 
-                    printerBtn?.addEventListener('click', () => {
-                        const selectedProducts = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.closest('tr').dataset.productId);
-                        if (selectedProducts.length > 0) {
-                            console.log(`Imprimir produtos selecionados: ${selectedProducts.join(', ')}. Simulação de impressão.`);
-                            window.showMessage(`A preparar a impressão de ${selectedProducts.length} produtos. Funcionalidade pendente.`, "info");
-                        } else {
-                            window.showMessage("Nenhum produto selecionado para imprimir.", "warning");
-                        }
+                    lockBtn?.addEventListener('click', () => handleBatchAction('Bloquear', 'A bloquear'));
+                    printerBtn?.addEventListener('click', () => handleBatchAction('Imprimir', 'A preparar impressão de'));
+                    trashBtn?.addEventListener('click', () => handleBatchAction('Excluir', 'A mover'));
+                    refreshBtn?.addEventListener('click', () => {
+                        window.showMessage("A atualizar a lista de produtos...", "info");
+                        applyFilters();
                     });
+                    viewOptionsBtn?.addEventListener('click', () => window.showMessage("Opções de visualização pendentes.", "info"));
 
-                    trashBtn?.addEventListener('click', () => {
-                        const selectedProducts = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.closest('tr').dataset.productId);
-                        if (selectedProducts.length > 0) {
-                            console.log(`Excluir produtos selecionados: ${selectedProducts.join(', ')}. Simulação de exclusão.`);
-                            window.showMessage(`A mover ${selectedProducts.length} produtos para a lixeira. Funcionalidade pendente.`, "info");
-                        } else {
-                            window.showMessage("Nenhum produto selecionado para excluir.", "warning");
-                        }
-                    });
-
-                    refreshBtn?.addEventListener('click', () => { // New refresh button event listener
-                        console.log('Botão Atualizar clicado. Simulação de atualização.');
-                        window.showMessage("A atualizar a lista de produtos... Funcionalidade pendente.", "info");
-                        applyFilters(); // Re-apply filters to simulate refresh
-                    });
-
-                    viewOptionsBtn?.addEventListener('click', () => { // New view options button event listener
-                        console.log('Botão Opções de Visualização clicado. Simulação de opções de visualização.');
-                        window.showMessage("A abrir opções de visualização (e.g., colunas da tabela, modo de exibição)... Funcionalidade pendente.", "info");
-                    });
-
-                    // Product selection logic
                     selectAllCheckbox?.addEventListener('change', (e) => {
-                        const isChecked = e.target.checked;
                         document.querySelectorAll('.product-checkbox').forEach(checkbox => {
-                            checkbox.checked = isChecked;
-                            if (isChecked) {
-                                checkbox.closest('tr').classList.add('selected-row');
-                            } else {
-                                checkbox.closest('tr').classList.remove('selected-row');
-                            }
+                            checkbox.checked = e.target.checked;
+                            checkbox.closest('tr').classList.toggle('selected-row', e.target.checked);
                         });
-                        if (isChecked) {
-                            window.showMessage("Todos os produtos visíveis foram selecionados.", "info");
-                        } else {
-                            window.showMessage("Seleção de todos os produtos removida.", "info");
-                        }
                     });
 
                     tableBody.addEventListener('change', (e) => {
                         if (e.target.classList.contains('product-checkbox')) {
-                            const row = e.target.closest('tr');
-                            if (e.target.checked) {
-                                row.classList.add('selected-row');
-                            } else {
-                                row.classList.remove('selected-row');
-                            }
-                            // Update select all checkbox state
-                            const allCheckboxes = document.querySelectorAll('.product-checkbox');
-                            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-                            if (selectAllCheckbox) {
-                                selectAllCheckbox.checked = allChecked;
-                            }
+                            e.target.closest('tr').classList.toggle('selected-row', e.target.checked);
+                            selectAllCheckbox.checked = Array.from(document.querySelectorAll('.product-checkbox')).every(cb => cb.checked);
                         }
                     });
 
-
-                    // Function to render/re-render the image preview area
                     const renderImagePreviews = () => {
-                        if (!imageDropArea) {
-                            console.error("renderImagePreviews: imageDropArea not found, cannot render.");
-                            return;
-                        }
-
-                        console.log('Rendering image previews. Current images array:', productImages);
-                        imageDropArea.innerHTML = ''; // Clear existing previews
-
+                        if (!imageDropArea) return;
+                        imageDropArea.innerHTML = '';
                         productImages.forEach((src, index) => {
                             const imageItem = document.createElement('div');
-                            imageItem.className = 'relative group aspect-w-1 aspect-h-1 bg-gray-100 border border-gray-200 rounded-md overflow-hidden flex items-center justify-center p-2 image-preview-item';
-                            // Add onerror to image tag for fallback
-                            imageItem.innerHTML = `
-                                <img src="${src}" alt="Pré-visualização da Imagem ${index + 1}" class="object-cover w-full h-full" onerror="this.onerror=null;this.src='https://placehold.co/120x120/ef4444/ffffff?text=Falha';">
-                                <button class="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delete-image-btn" data-index="${index}">
-                                    <i data-lucide="x" class="w-3 h-3"></i>
-                                </button>
-                            `;
+                            imageItem.className = 'relative group aspect-w-1 aspect-h-1 bg-gray-100 border rounded-md overflow-hidden flex items-center justify-center p-2';
+                            imageItem.innerHTML = `<img src="${src}" alt="Pré-visualização ${index + 1}" class="object-cover w-full h-full" onerror="this.onerror=null;this.src='https://placehold.co/120x120/ef4444/ffffff?text=Falha';"><button class="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100" data-index="${index}"><i data-lucide="x" class="w-3 h-3"></i></button>`;
                             imageDropArea.appendChild(imageItem);
                         });
-
-                        // Update main product image preview
-                        if (productImages.length > 0) {
-                            if (productImagePreview) {
-                                productImagePreview.src = productImages[0];
-                                console.log('Main image preview updated to:', productImages[0]);
-                            }
-                        } else {
-                            if (productImagePreview) {
-                                productImagePreview.src = 'https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem';
-                                console.log('Main image preview set to placeholder.');
-                            }
-                        }
-
-                        // Add "plus" icon slot if less than MAX_IMAGES
                         if (productImages.length < MAX_IMAGES) {
                             const plusIconDiv = document.createElement('div');
-                            plusIconDiv.className = 'aspect-w-1 aspect-h-1 bg-gray-100 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center text-gray-500 hover:border-blue-500 hover:text-blue-500 cursor-pointer transition-colors duration-200 add-image-slot';
+                            plusIconDiv.className = 'aspect-w-1 aspect-h-1 bg-gray-100 border-2 border-dashed rounded-md flex items-center justify-center text-gray-500 hover:border-blue-500 cursor-pointer add-image-slot';
                             plusIconDiv.innerHTML = '<i data-lucide="plus" class="w-8 h-8"></i>';
-                            plusIconDiv.addEventListener('click', () => {
-                                if (productImages.length < MAX_IMAGES) {
-                                    productImageInput.click();
-                                    console.log('Add image slot clicked, opening file input.');
-                                } else {
-                                    window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
-                                    console.warn(`Limit of ${MAX_IMAGES} images reached on click.`);
-                                }
-                            });
                             imageDropArea.appendChild(plusIconDiv);
-                            console.log('Added "plus" icon slot.');
-                        } else {
-                             window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "info");
-                             console.info(`Limit of ${MAX_IMAGES} images reached, not adding "plus" slot.`);
                         }
-                        window.lucide.createIcons(); 
+                        productImagePreview.src = productImages.length > 0 ? productImages[0] : 'https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem';
+                        window.lucide.createIcons();
                     };
 
-                    // Event listeners for modal
                     addProductBtn.addEventListener('click', () => {
-                        console.log('Add Product button clicked. Showing product modal.'); 
-                        productForm.reset(); 
-                        productForm.dataset.editingId = ''; 
-                        
-                        productImages = []; 
-                        renderImagePreviews(); 
-
-                        if (addImageUrlInput) addImageUrlInput.value = ''; 
-
+                        productForm.reset();
+                        productImages = [];
+                        renderImagePreviews();
                         productModal.classList.remove('hidden');
-                        productModal.querySelector('.modal-content').classList.remove('translate-y-[-20px]');
-                        document.querySelectorAll('.tab-content').forEach(content => {
-                            content.classList.remove('active');
-                            content.style.display = 'none'; 
-                        });
-                        document.querySelectorAll('#modal-tabs .tab-link').forEach(link => {
-                            link.classList.remove('active', 'border-green-500', 'text-green-500');
-                            link.classList.add('text-gray-500', 'border-transparent', 'hover:border-gray-300', 'hover:text-gray-700'); 
-                        });
-                        
-                        const defaultTabLink = document.querySelector('#modal-tabs .tab-link[data-tab="caracteristicas"]');
-                        const defaultTabContent = document.getElementById('caracteristicas');
-
-                        if (defaultTabLink) {
-                            defaultTabLink.classList.add('active', 'border-green-500', 'text-green-500');
-                            defaultTabLink.classList.remove('text-gray-500', 'border-transparent', 'hover:border-gray-300', 'hover:text-gray-700');
-                        }
-                        if (defaultTabContent) {
-                            defaultTabContent.classList.add('active');
-                            defaultTabContent.style.display = 'block'; 
-                        }
-                        window.lucide.createIcons();
                     });
                     
-                    const hideProductModal = () => {
-                        console.log('Hiding product modal.'); 
-                        if (productModal) {
-                            productModal.querySelector('.modal-content').classList.add('translate-y-[-20px]');
-                            setTimeout(() => {
-                                productModal.classList.add('hidden');
-                            }, 300); 
-                        } else {
-                            console.error("Erro: product-modal não encontrado ao tentar esconder.");
-                        }
-                    };
-
-                    if (modalCloseButton) {
-                        modalCloseButton.addEventListener('click', hideProductModal);
-                    } else {
-                        console.error("Erro: Botão de fechar do modal de produto não encontrado.");
-                    }
+                    const hideProductModal = () => productModal.classList.add('hidden');
+                    modalCloseButton.addEventListener('click', hideProductModal);
                     cancelBtn.addEventListener('click', hideProductModal);
 
-                    // Image file input functionality
-                    if (productImageInput && imageDropArea) {
-                        productImageInput.addEventListener('change', (event) => {
-                            console.log('Product image file input changed.'); 
-                            if (productImages.length >= MAX_IMAGES) {
-                                window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
-                                console.warn(`File input: Limit of ${MAX_IMAGES} images reached.`);
-                                return;
-                            }
-
-                            const file = event.target.files[0];
-                            if (file) {
-                                console.log('File selected from input:', file.name, file.type); 
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                    console.log('FileReader loaded image (Base64) from file.'); 
-                                    productImages.push(e.target.result);
-                                    renderImagePreviews();
-                                };
-                                reader.onerror = (error) => {
-                                    console.error('FileReader error during file load:', error);
-                                    window.showMessage("Erro ao carregar a imagem do arquivo.", "error");
-                                };
-                                reader.readAsDataURL(file);
-                            } else {
-                                console.log('No file selected from input.'); 
-                            }
-                        });
-
-                        // Handle clicks on the image drop area for adding new images and deleting existing ones
-                        imageDropArea.addEventListener('click', (e) => {
-                            if (e.target.closest('.add-image-slot')) {
-                                if (productImages.length < MAX_IMAGES) {
-                                    productImageInput.click();
-                                    console.log('Add image slot clicked, opening file input.');
-                                } else {
-                                    window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
-                                    console.warn(`Limit of ${MAX_IMAGES} images reached on click.`);
-                                }
-                            }
-                            const deleteButton = e.target.closest('.delete-image-btn');
-                            if (deleteButton) {
-                                const indexToRemove = parseInt(deleteButton.dataset.index, 10);
-                                console.log("Delete image button clicked for index:", indexToRemove);
-                                productImages.splice(indexToRemove, 1); 
-                                renderImagePreviews(); 
-                                window.showMessage("Imagem removida.", "info");
-                            }
-                        });
-
-                        // Drag and drop functionality
-                        imageDropArea.addEventListener('dragover', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (productImages.length < MAX_IMAGES) {
-                                imageDropArea.classList.add('border-blue-500', 'bg-blue-50'); 
-                            }
-                        });
-
-                        imageDropArea.addEventListener('dragleave', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            imageDropArea.classList.remove('border-blue-500', 'bg-blue-50');
-                        });
-
-                        imageDropArea.addEventListener('drop', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            imageDropArea.classList.remove('border-blue-500', 'bg-blue-50');
-
-                            if (productImages.length >= MAX_IMAGES) {
-                                window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
-                                console.warn(`Drag/Drop: Limit of ${MAX_IMAGES} images reached.`);
-                                return;
-                            }
-
-                            const files = e.dataTransfer.files;
-                            if (files.length > 0) {
-                                console.log('Files dropped:', files);
-                                const file = files[0]; 
-                                if (file.type.startsWith('image/')) {
-                                    const reader = new FileReader();
-                                    reader.onload = (event) => {
-                                        console.log('FileReader loaded image (Base64) from drop.'); 
-                                        productImages.push(event.target.result);
-                                        renderImagePreviews();
-                                    };
-                                    reader.onerror = (error) => {
-                                        console.error('FileReader error during drop load:', error);
-                                        window.showMessage("Erro ao carregar a imagem arrastada.", "error");
-                                    };
-                                    reader.readAsDataURL(file);
-                                } else {
-                                    window.showMessage("Por favor, solte apenas arquivos de imagem.", "error");
-                                }
-                            }
-                        });
-
-                    } else {
-                        console.error("Erro: productImageInput ou imageDropArea não encontrado (runProductSystemScript).");
-                    }
-
-                    // Add Image by URL functionality
-                    if (addImageUrlBtn && addImageUrlInput) {
-                        addImageUrlBtn.addEventListener('click', () => {
-                            console.log('Add Image by URL button clicked.');
-                            if (productImages.length >= MAX_IMAGES) {
-                                window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
-                                console.warn(`Add by URL: Limit of ${MAX_IMAGES} images reached.`);
-                                return;
-                            }
-
-                            const imageUrl = addImageUrlInput.value.trim();
-                            if (imageUrl) {
-                                console.log('Attempting to add image with URL:', imageUrl);
-                                // Simple check for common image extensions
-                                const isImageLink = /\.(jpeg|jpg|png|gif|webp|svg)$/i.test(imageUrl);
-
-                                if (!isImageLink) {
-                                    window.showMessage("URL de imagem inválida. Por favor, insira um link direto para o ficheiro da imagem (terminando em .jpg, .png, etc.).", "error");
-                                    console.error("Invalid image file extension in URL:", imageUrl);
-                                    return;
-                                }
-
-                                try {
-                                    new URL(imageUrl); // Validate URL format
-                                    productImages.push(imageUrl);
-                                    renderImagePreviews();
-                                    addImageUrlInput.value = ''; 
-                                    window.showMessage("Imagem adicionada por link!", "success");
-                                } catch (e) {
-                                    window.showMessage("URL de imagem inválida. Por favor, insira um link válido.", "error");
-                                    console.error("Invalid URL format provided:", imageUrl, e);
-                                }
-                            } else {
-                                window.showMessage("Por favor, insira um link de imagem.", "error");
-                                console.warn("Add by URL: No URL provided.");
-                            }
-                        });
-                    } else {
-                        console.error("Erro: addImageUrlBtn ou addImageUrlInput não encontrado (runProductSystemScript).");
-                    }
-
-
-                    // Function to generate a unique internal barcode (shorter version)
-                    const generateInternalBarcode = () => {
-                        console.log('Generating internal barcode.'); 
-                        const randomString = Math.random().toString(36).substring(2, 8).toUpperCase(); 
-                        const barcode = `SKU-${randomString}`; 
-                        const skuInput = productForm.querySelector('[name="product-sku"]');
-                        if (skuInput) {
-                            skuInput.value = barcode;
-                            window.showMessage("Código SKU interno gerado!", "success");
-                        } else {
-                            window.showMessage("Campo de Código (SKU) não encontrado.", "error");
+                    const addImageFile = (file) => {
+                        if (productImages.length >= MAX_IMAGES) {
+                            window.showMessage(`Limite de ${MAX_IMAGES} imagens atingido.`, "error");
+                            return;
                         }
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            productImages.push(e.target.result);
+                            renderImagePreviews();
+                        };
+                        reader.readAsDataURL(file);
                     };
 
-                    // Function to generate a unique GTIN/EAN (placeholder)
-                    const generateGtinEan = () => {
-                        console.log('Generating GTIN/EAN.'); 
-                        const randomNumeric = Math.floor(100000000000 + Math.random() * 900000000000).toString(); 
-                        const gtinEan = `GTIN-${randomNumeric}`;
-                        const gtinEanInput = productForm.querySelector('[name="product-gtinean"]');
-                        if (gtinEanInput) {
-                            gtinEanInput.value = gtinEan;
-                            window.showMessage("Código GTIN/EAN gerado!", "success");
-                        } else {
-                            window.showMessage("Campo de GTIN/EAN não encontrado.", "error");
+                    imageDropArea.addEventListener('click', (e) => {
+                        if (e.target.closest('.add-image-slot')) productImageInput.click();
+                        const deleteButton = e.target.closest('.delete-image-btn');
+                        if (deleteButton) {
+                            productImages.splice(parseInt(deleteButton.dataset.index, 10), 1);
+                            renderImagePreviews();
                         }
-                    };
-
-                    if (generateBarcodeBtn) {
-                        generateBarcodeBtn.addEventListener('click', generateInternalBarcode);
-                    }
-                    if (generateGtinEanBtn) {
-                        generateGtinEanBtn.addEventListener('click', generateGtinEan);
-                    }
-
-                    productForm.addEventListener('submit', async (e) => {
+                    });
+                    productImageInput.addEventListener('change', (e) => e.target.files[0] && addImageFile(e.target.files[0]));
+                    imageDropArea.addEventListener('dragover', (e) => e.preventDefault());
+                    imageDropArea.addEventListener('drop', (e) => {
                         e.preventDefault();
-                        console.log('Product form submitted.'); 
+                        if (e.dataTransfer.files[0]) addImageFile(e.dataTransfer.files[0]);
+                    });
+
+                    addImageUrlBtn.addEventListener('click', () => {
+                        const imageUrl = addImageUrlInput.value.trim();
+                        if (imageUrl) {
+                            productImages.push(imageUrl);
+                            renderImagePreviews();
+                            addImageUrlInput.value = '';
+                        }
+                    });
+
+                    generateBarcodeBtn.addEventListener('click', () => {
+                        productForm.querySelector('[name="product-sku"]').value = `SKU-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+                    });
+                    generateGtinEanBtn.addEventListener('click', () => {
+                        productForm.querySelector('[name="product-gtinean"]').value = `GTIN-${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+                    });
+
+                    productForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
                         window.showMessage("Guarda de produto no Supabase pendente.", "info");
                         hideProductModal();
                     });
 
-                    tableBody.addEventListener('click', async (e) => {
-                        const targetButton = e.target.closest('button');
-                        if (targetButton) {
-                            const action = targetButton.dataset.action;
-                            const productId = targetButton.closest('tr').dataset.productId; // Get product ID from row
-                            if (action === 'delete') {
-                                console.log(`Delete product with ID: ${productId} action triggered.`); 
-                                window.showMessage(`Eliminação do produto ID: ${productId} no Supabase pendente.`, "info");
-                            } else if (action === 'edit') {
-                                console.log(`Edição do produto com ID: ${productId} no Supabase pendente.`, "info");
-                            } else if (action === 'add-to-cart') {
-                                console.log(`Adicionar ao carrinho o produto com ID: ${productId}. Funcionalidade pendente.`);
-                                window.showMessage(`Produto ID: ${productId} adicionado ao carrinho.`, "info");
-                            } else if (action === 'more-options') {
-                                console.log(`Mais opções para o produto com ID: ${productId}. Funcionalidade pendente.`);
-                                window.showMessage(`A abrir mais opções para o produto ID: ${productId}.`, "info");
-                            }
+                    tableBody.addEventListener('click', (e) => {
+                        const button = e.target.closest('button[data-action]');
+                        if (button) {
+                            const action = button.dataset.action;
+                            const productId = button.closest('tr').dataset.productId;
+                            window.showMessage(`Ação '${action}' para produto ${productId} pendente.`, "info");
                         }
                     });
 
-                    const modalTabs = document.getElementById('modal-tabs');
-                    if (modalTabs) {
-                        modalTabs.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const tabLink = e.target.closest('.tab-link');
-                            if (tabLink) {
-                                console.log(`Tab clicked: ${tabLink.dataset.tab}`); 
+                    document.getElementById('modal-tabs')?.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const tabLink = e.target.closest('.tab-link');
+                        if (tabLink) {
+                            document.querySelectorAll('#modal-tabs .tab-link, .tab-content').forEach(el => el.classList.remove('active', 'border-green-500', 'text-green-500'));
+                            tabLink.classList.add('active', 'border-green-500', 'text-green-500');
+                            document.getElementById(tabLink.dataset.tab)?.classList.add('active');
+                        }
+                    });
+                    
+                    const importModal = document.getElementById('import-modal');
+                    const importModalCloseBtn = document.getElementById('import-modal-close');
+                    const importModalCancelBtn = document.getElementById('import-modal-cancel');
+                    const downloadTemplateBtn = document.getElementById('download-template-btn');
+                    const importFileInput = document.getElementById('import-file-input');
+                    const importDropArea = document.getElementById('import-drop-area');
+                    const importFileText = document.getElementById('import-file-text');
+                    const importFileName = document.getElementById('import-file-name');
+                    const processImportBtn = document.getElementById('process-import-btn');
 
-                                document.querySelectorAll('.tab-content').forEach(content => {
-                                    console.log(`Attempting to hide tab-content: ${content.id}`); 
-                                    content.classList.remove('active');
-                                    content.style.display = 'none'; 
-                                });
-                                document.querySelectorAll('.tab-link').forEach(link => {
-                                    link.classList.remove('active', 'border-green-500', 'text-green-500');
-                                    link.classList.add('text-gray-500', 'border-transparent', 'hover:border-gray-300', 'hover:text-gray-700');
-                                });
+                    importProductsBtn?.addEventListener('click', () => importModal.classList.remove('hidden'));
+                    const hideImportModal = () => importModal.classList.add('hidden');
+                    importModalCloseBtn.addEventListener('click', hideImportModal);
+                    importModalCancelBtn.addEventListener('click', hideImportModal);
 
-                                tabLink.classList.add('active', 'border-green-500', 'text-green-500');
-                                tabLink.classList.remove('text-gray-500', 'border-transparent', 'hover:border-gray-300', 'hover:text-gray-700');
-                                
-                                const targetTabId = tabLink.dataset.tab;
-                                const targetTabContent = document.getElementById(targetTabId);
-                                if (targetTabContent) {
-                                    console.log(`Attempting to show tab-content: ${targetTabId}`); 
-                                    targetTabContent.classList.add('active');
-                                    targetTabContent.style.display = 'block'; 
-                                } else {
-                                    console.error(`ERROR: Target tab content not found for ID: ${targetTabId}`);
-                                }
-                                window.lucide.createIcons(); 
-                            }
+                    downloadTemplateBtn.addEventListener('click', () => {
+                        const headers = ["nome", "codigo_sku", "preco_venda", "formato", "tipo", "condicao", "marca", "producao", "data_validade", "frete_gratis", "peso_liquido_kg", "peso_bruto_kg", "largura_cm", "altura_cm", "profundidade_cm", "volumes", "itens_por_caixa", "unidade_medida", "gtin_ean", "gtin_ean_tributario", "ncm", "cest", "origem_mercadoria"];
+                        const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodeURI(csvContent));
+                        link.setAttribute("download", "modelo_importacao_produtos.csv");
+                        link.click();
+                    });
+
+                    const handleFileSelect = (files) => {
+                        if (files.length > 0) {
+                            importFileName.textContent = `Ficheiro: ${files[0].name}`;
+                            processImportBtn.disabled = false;
+                        }
+                    };
+
+                    importDropArea.addEventListener('click', () => importFileInput.click());
+                    importFileInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+                    importDropArea.addEventListener('dragover', (e) => e.preventDefault());
+                    importDropArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        handleFileSelect(e.dataTransfer.files);
+                    });
+                    processImportBtn.addEventListener('click', () => {
+                        if (importFileInput.files.length > 0) {
+                            window.showMessage(`A importar "${importFileInput.files[0].name}". Funcionalidade pendente.`, "info");
+                            hideImportModal();
+                        }
+                    });
+
+                    // --- Export Logic ---
+                    exportProductsBtn.addEventListener('click', () => {
+                        console.log('A exportar produtos...');
+                        window.showMessage('A preparar a exportação...', 'info');
+
+                        // Placeholder data - replace with actual data from Supabase
+                        const productsToExport = [
+                            { nome: "FITA VEDA ROSCA", codigo_sku: "9776", preco_venda: 1.99, unidade: "UN", estoque: 0 },
+                            { nome: "CARRO INFANTIL PEQUENO", codigo_sku: "0301", preco_venda: 80.00, unidade: "UN", estoque: 2 },
+                            { nome: "CARRO INFANTIL TOTOCA", codigo_sku: "6002", preco_venda: 180.00, unidade: "UN", estoque: 2 }
+                        ];
+
+                        if (productsToExport.length === 0) {
+                            window.showMessage('Não há produtos para exportar.', 'error');
+                            return;
+                        }
+
+                        const headers = ["Nome", "Codigo SKU", "Preco Venda", "Unidade", "Estoque"];
+                        const csvRows = [headers.join(',')]; // Header row
+
+                        productsToExport.forEach(product => {
+                            const values = [
+                                `"${product.nome}"`,
+                                `"${product.codigo_sku}"`,
+                                product.preco_venda,
+                                `"${product.unidade}"`,
+                                product.estoque
+                            ];
+                            csvRows.push(values.join(','));
                         });
-                    }
-                    applyFilters(); // Initial render of filter chips and messages
-                } catch (error) { // End try block
+
+                        const csvContent = csvRows.join('\n');
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", "produtos_exportados.csv");
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.showMessage('Exportação concluída!', 'success');
+                    });
+
+
+                    applyFilters();
+                } catch (error) {
                     console.error("An error occurred in runProductSystemScript:", error);
-                    window.showMessage("Ocorreu um erro ao carregar o sistema de produtos. Por favor, verifique a consola para mais detalhes.", "error");
+                    window.showMessage("Ocorreu um erro ao carregar o sistema de produtos.", "error");
                 }
             };
 
             const runClientesFornecedoresScript = () => {
-                console.log('runClientesFornecedoresScript started. Supabase database integration pending.');
+                console.log('runClientesFornecedoresScript started.');
                 const tableBody = document.getElementById('cs-table-body');
-                if (!tableBody) { console.error('Error: cs-table-body not found.'); return; }
-                
-                const renderTable = (data) => {
-                    tableBody.innerHTML = '';
-                    if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">Nenhum cliente ou fornecedor registado ainda.</td></tr>';
-                        return;
-                    }
-                    data.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class="p-3">${item.nome}</td>
-                            <td class="p-3">${item.cpf || item.cnpj}</td>
-                            <td class="p-3">${item.tipo}</td>
-                            <td class="text-center p-3">
-                                <button class="p-1.5 text-gray-500 hover:text-blue-600 rounded-md"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                            </td>
-                        `;
-                        tableBody.appendChild(tr);
-                    });
-                    window.lucide.createIcons();
-                };
-                renderTable(clientsAndSuppliers); // Using dummy data for now
-                tableBody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">A carregar clientes/fornecedores do Supabase... (Integração da base de dados pendente)</td></tr>';
+                if (!tableBody) return;
+                tableBody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">A carregar...</td></tr>';
             };
 
-            // Templates HTML
-            const dashboardHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1><div class="bg-white p-6 rounded-lg shadow"><p>Bem-vindo ao seu sistema!</p><p class="mt-2 text-sm text-gray-600">Este é um ambiente de demonstração com persistência de dados via Supabase.</p></div></div>`;
-            const vendasHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Gestão de Vendas</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página de Vendas em construção.</p></div></div>`;
-            const estoqueHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Controle de Inventário</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página de Inventário em construção.</p></div></div>`;
-            const financeiroHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Gestão Financeira</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página Financeira em construção.</p></div></div>`;
+            const dashboardHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1><div class="bg-white p-6 rounded-lg shadow"><p>Bem-vindo ao seu sistema!</p></div></div>`;
+            const vendasHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Gestão de Vendas</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página em construção.</p></div></div>`;
+            const estoqueHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Controle de Inventário</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página em construção.</p></div></div>`;
+            const financeiroHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Gestão Financeira</h1><div class="bg-white p-6 rounded-lg shadow"><p>Página em construção.</p></div></div>`;
             const productSystemHtml = `
             <div class="product-system-container grid grid-cols-[288px_1fr_200px] h-full overflow-hidden bg-gray-100 rounded-xl shadow-lg">
                 <aside class="bg-gray-100 text-gray-800 p-4 space-y-4 overflow-y-auto flex-shrink-0 rounded-l-xl">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-bold">Filtrar</h2>
-                        <button id="clear-filters-btn" class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 p-1 rounded-sm">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i> Limpar
-                        </button>
+                        <button id="clear-filters-btn" class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 p-1 rounded-sm"><i data-lucide="x" class="w-3.5 h-3.5"></i> Limpar</button>
                     </div>
                     <div class="space-y-3 mt-4">
-                        <div>
-                            <label for="filter-situacao" class="block text-sm font-medium text-gray-700">Situação</label>
-                            <select id="filter-situacao" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Todos</option>
-                                <option value="ultimos_incluidos">Últimos Incluídos</option>
-                                <option value="ativo">Ativo</option>
-                                <option value="inativo">Inativo</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="filter-tags" class="block text-sm font-medium text-gray-700">Tags</label>
-                            <select id="filter-tags" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Todas</option>
-                                <option value="tag1">Tag 1</option>
-                                <option value="tag2">Tag 2</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="filter-categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
-                            <select id="filter-categoria" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Todas</option>
-                                <option value="cat1">Categoria 1</option>
-                                <option value="cat2">Categoria 2</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="filter-ncm" class="block text-sm font-medium text-gray-700">NCM</label>
-                            <input type="text" id="filter-ncm" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Código NCM">
-                        </div>
-                        <div>
-                            <label for="filter-tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
-                            <select id="filter-tipo" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Todos</option>
-                                <option value="produto">Produto</option>
-                                <option value="servico">Serviço</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="filter-marca" class="block text-sm font-medium text-gray-700">Marca</label>
-                            <input type="text" id="filter-marca" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Nome da marca">
-                        </div>
+                        <div><label for="filter-situacao" class="block text-sm font-medium text-gray-700">Situação</label><select id="filter-situacao" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm"><option value="">Todos</option><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+                        <div><label for="filter-tags" class="block text-sm font-medium text-gray-700">Tags</label><select id="filter-tags" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm"><option value="">Todas</option></select></div>
+                        <div><label for="filter-categoria" class="block text-sm font-medium text-gray-700">Categoria</label><select id="filter-categoria" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm"><option value="">Todas</option></select></div>
+                        <div><label for="filter-ncm" class="block text-sm font-medium text-gray-700">NCM</label><input type="text" id="filter-ncm" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm" placeholder="Código NCM"></div>
+                        <div><label for="filter-tipo" class="block text-sm font-medium text-gray-700">Tipo</label><select id="filter-tipo" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm"><option value="">Todos</option><option value="produto">Produto</option><option value="servico">Serviço</option></select></div>
+                        <div><label for="filter-marca" class="block text-sm font-medium text-gray-700">Marca</label><input type="text" id="filter-marca" class="w-full mt-1 bg-white border border-gray-300 rounded-md px-2 py-1.5 text-sm" placeholder="Nome da marca"></div>
                     </div>
                 </aside>
                 <main class="flex-1 flex flex-col overflow-hidden bg-white rounded-none shadow-md">
@@ -1560,42 +1094,27 @@
                         <div class="flex justify-between items-center mb-2">
                             <h2 class="text-sm font-semibold text-gray-300">As Lojas</h2>
                             <div class="flex items-center gap-2">
-                                <button id="lock-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"><i data-lucide="lock" class="w-3.5 h-3.5"></i></button>
-                                <button id="printer-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"><i data-lucide="printer" class="w-3.5 h-3.5"></i></button>
-                                <button id="trash-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white transition-colors duration-200"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                <button id="lock-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white"><i data-lucide="lock" class="w-3.5 h-3.5"></i></button>
+                                <button id="printer-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white"><i data-lucide="printer" class="w-3.5 h-3.5"></i></button>
+                                <button id="trash-product-btn" class="p-1 rounded-sm bg-gray-700 hover:bg-gray-600 text-white"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2 w-full mb-2">
-                            <div class="relative flex-1 max-w-sm"> <!-- Smaller search bar -->
-                                <input type="text" id="product-search-input" class="w-full product-search-input-dark rounded-md pl-8 pr-2 py-1 text-sm placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500" placeholder="Pesquisar por código, descrição ou GTIN">
-                                <i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2"></i>
-                            </div>
-                            <div id="date-range-display" class="relative bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-xs placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 w-40 text-center cursor-pointer flex items-center justify-between hover:bg-gray-600 transition-colors duration-200">
-                                <span>Data do Pedido</span>
-                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400"></i>
-                            </div>
-                            <!-- Hidden inputs for actual date values -->
-                            <input type="hidden" id="search-date-start" value="">
-                            <input type="hidden" id="search-date-end" value="">
-
-                            <button id="toggle-filter-sidebar-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-1 px-2.5 rounded-sm flex items-center gap-1 transition-colors duration-200 text-xs">
-                                <i data-lucide="filter" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button id="refresh-product-btn" class="p-1 bg-gray-700 hover:bg-gray-600 text-white rounded-sm transition-colors duration-200"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
-                            <button id="view-options-product-btn" class="p-1 bg-gray-700 hover:bg-gray-600 text-white rounded-sm transition-colors duration-200"><i data-lucide="settings" class="w-3.5 h-3.5"></i></button>
+                            <div class="relative flex-1 max-w-sm"><input type="text" id="product-search-input" class="w-full product-search-input-dark rounded-md pl-8 pr-2 py-1 text-sm" placeholder="Pesquisar..."><i data-lucide="search" class="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2"></i></div>
+                            <div id="date-range-display" class="relative bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-xs w-40 text-center cursor-pointer flex items-center justify-between hover:bg-gray-600"><span>Data do Pedido</span><i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400"></i></div>
+                            <input type="hidden" id="search-date-start" value=""><input type="hidden" id="search-date-end" value="">
+                            <button id="toggle-filter-sidebar-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-1 px-2.5 rounded-sm flex items-center gap-1 text-xs"><i data-lucide="filter" class="w-3.5 h-3.5"></i></button>
+                            <button id="refresh-product-btn" class="p-1 bg-gray-700 hover:bg-gray-600 text-white rounded-sm"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
+                            <button id="view-options-product-btn" class="p-1 bg-gray-700 hover:bg-gray-600 text-white rounded-sm"><i data-lucide="settings" class="w-3.5 h-3.5"></i></button>
                         </div>
-                        <div id="filter-chips-container" class="flex flex-wrap items-center gap-2 text-sm mt-2">
-                            <!-- Filter chips will be rendered here -->
-                        </div>
+                        <div id="filter-chips-container" class="flex flex-wrap items-center gap-2 text-sm mt-2"></div>
                     </header>
-                    <div class="flex-1 overflow-y-auto p-6"> <!-- Adjusted padding here -->
+                    <div class="flex-1 overflow-y-auto p-6">
                         <div class="product-table-dark rounded-lg shadow overflow-hidden border border-gray-700">
                             <table class="w-full">
                                 <thead class="border-b border-gray-700">
                                     <tr>
-                                        <th class="p-3 text-left text-xs font-semibold uppercase w-10">
-                                            <input type="checkbox" id="select-all-products" class="rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </th>
+                                        <th class="p-3 text-left text-xs font-semibold uppercase w-10"><input type="checkbox" id="select-all-products" class="rounded-sm text-blue-500 bg-gray-600 border-gray-500"></th>
                                         <th class="p-3 text-left text-xs font-semibold uppercase">Imagem</th>
                                         <th class="p-3 text-left text-xs font-semibold uppercase">Descrição</th>
                                         <th class="p-3 text-left text-xs font-semibold uppercase">Código</th>
@@ -1605,98 +1124,7 @@
                                         <th class="p-3 text-center text-xs font-semibold uppercase">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="product-table-body" class="divide-y divide-gray-700">
-                                    <!-- Conteúdo da tabela será carregado aqui -->
-                                    <tr data-product-id="prod_001">
-                                        <td class="p-3">
-                                            <input type="checkbox" class="product-checkbox rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </td>
-                                        <td class="p-3">
-                                            <img src="https://placehold.co/40x40/444444/ffffff?text=Prod" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
-                                        </td>
-                                        <td class="p-3">FITA VEDA ROSCA 12MMX3M VEDALAR</td>
-                                        <td class="p-3">9776</td>
-                                        <td class="p-3">UN</td>
-                                        <td class="p-3">1,9900</td>
-                                        <td class="p-3">0,000000</td>
-                                        <td class="text-center p-3">
-                                            <button class="p-0.5 text-red-400 hover:text-red-600 rounded-sm" data-action="add-to-cart"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="more-options"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr data-product-id="prod_002">
-                                        <td class="p-3">
-                                            <input type="checkbox" class="product-checkbox rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </td>
-                                        <td class="p-3">
-                                            <img src="https://placehold.co/40x40/444444/ffffff?text=Prod" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
-                                        </td>
-                                        <td class="p-3">FITA VEDA ROSCA 12MMX3M VEDALAR</td>
-                                        <td class="p-3">09370</td>
-                                        <td class="p-3">UN</td>
-                                        <td class="p-3">-3,000000</td>
-                                        <td class="text-center p-3">
-                                            <button class="p-0.5 text-red-400 hover:text-red-600 rounded-sm" data-action="add-to-cart"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="more-options"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr data-product-id="prod_003">
-                                        <td class="p-3">
-                                            <input type="checkbox" class="product-checkbox rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </td>
-                                        <td class="p-3">
-                                            <img src="https://placehold.co/40x40/444444/ffffff?text=Prod" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
-                                        </td>
-                                        <td class="p-3">CARRO INFANTIL PEQUENO S/PEGA</td>
-                                        <td class="p-3">0301</td>
-                                        <td class="p-3">UN</td>
-                                        <td class="p-3">80,0000</td>
-                                        <td class="p-3">2,000000</td>
-                                        <td class="text-center p-3">
-                                            <button class="p-0.5 text-red-400 hover:text-red-600 rounded-sm" data-action="add-to-cart"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="more-options"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr data-product-id="prod_004">
-                                        <td class="p-3">
-                                            <input type="checkbox" class="product-checkbox rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </td>
-                                        <td class="p-3">
-                                            <img src="https://placehold.co/40x40/444444/ffffff?text=Prod" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
-                                        </td>
-                                        <td class="p-3">CARRO INFANTIL PEQUENO S/PEGA</td>
-                                        <td class="p-3">0300</td>
-                                        <td class="p-3">UN</td>
-                                        <td class="p-3">80,0000</td>
-                                        <td class="p-3">2,000000</td>
-                                        <td class="text-center p-3">
-                                            <button class="p-0.5 text-red-400 hover:text-red-600 rounded-sm" data-action="add-to-cart"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="more-options"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr data-product-id="prod_005">
-                                        <td class="p-3">
-                                            <input type="checkbox" class="product-checkbox rounded-sm text-blue-500 focus:ring-blue-400 bg-gray-600 border-gray-500">
-                                        </td>
-                                        <td class="p-3">
-                                            <img src="https://placehold.co/40x40/444444/ffffff?text=Prod" alt="Produto" class="w-10 h-10 rounded-sm object-cover">
-                                        </td>
-                                        <td class="p-3">CARRO INFANTIL TOTOCA C/LATERAL 6002</td>
-                                        <td class="p-3">6002</td>
-                                        <td class="p-3">UN</td>
-                                        <td class="p-3">180,0000</td>
-                                        <td class="p-3">2,000000</td>
-                                        <td class="text-center p-3">
-                                            <button class="p-0.5 text-red-400 hover:text-red-600 rounded-sm" data-action="add-to-cart"><i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-red-600 rounded-sm" data-action="delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                            <button class="p-0.5 text-gray-400 hover:text-blue-400 rounded-sm" data-action="more-options"><i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i></button>
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="product-table-body" class="divide-y divide-gray-700"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1704,222 +1132,91 @@
                 <aside class="bg-gray-100 text-gray-800 p-4 space-y-4 overflow-y-auto flex-shrink-0 rounded-r-xl">
                     <h2 class="text-xl font-bold mb-4">Ações</h2>
                     <div class="space-y-3">
-                        <button id="add-product-btn" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2 transition-colors duration-200">
-                            <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Produto
-                        </button>
-                        <button id="import-products-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2 transition-colors duration-200">
-                            <i data-lucide="download" class="w-4 h-4"></i> Importar
-                        </button>
-                        <button id="export-products-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2 transition-colors duration-200">
-                            <i data-lucide="upload" class="w-4 h-4"></i> Exportar
-                        </button>
+                        <button id="add-product-btn" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar Produto</button>
+                        <button id="import-products-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Importar</button>
+                        <button id="export-products-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center justify-center gap-2"><i data-lucide="download-cloud" class="w-4 h-4"></i> Exportar</button>
                     </div>
                 </aside>
             </div>`;
             const clientesFornecedoresHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Clientes e Fornecedores</h1></div><div class="flex items-center gap-4"><button id="add-cs-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Nome</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Documento</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Tipo</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="cs-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
-            const productModalHtml = `<div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Não</option><option>Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
-            <!-- Date Picker Modal -->
-            <div id="date-picker-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                <div class="date-picker-modal-content w-full max-w-4xl p-6 flex gap-6">
-                    <div class="flex-1 flex flex-col space-y-4">
-                        <div class="flex items-center justify-between">
-                            <button id="prev-month-left" class="calendar-nav-btn"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                            <h4 id="month-display-left" class="text-md font-semibold text-gray-300"></h4>
-                            <button id="next-month-left" class="calendar-nav-btn"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                        </div>
-                        <div class="grid grid-cols-7 text-center text-xs text-gray-400 font-medium">
-                            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-                        </div>
-                        <div id="calendar-grid-left" class="grid grid-cols-7 gap-1">
-                            <!-- Days will be generated here -->
-                        </div>
-                    </div>
-                    <div class="flex-1 flex flex-col space-y-4">
-                        <div class="flex items-center justify-between">
-                            <button id="prev-month-right" class="calendar-nav-btn"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                            <h4 id="month-display-right" class="text-md font-semibold text-gray-300"></h4>
-                            <button id="next-month-right" class="calendar-nav-btn"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                        </div>
-                        <div class="grid grid-cols-7 text-center text-xs text-gray-400 font-medium">
-                            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-                        </div>
-                        <div id="calendar-grid-right" class="grid grid-cols-7 gap-1">
-                            <!-- Days will be generated here -->
-                        </div>
-                    </div>
-                    <div class="w-1/4 flex flex-col space-y-2 ml-6">
-                        <h5 class="text-sm font-semibold mb-2">Períodos Rápidos</h5>
-                        <button class="quick-select-btn" data-preset="today">Hoje</button>
-                        <button class="quick-select-btn" data-preset="this_week">Esta semana</button>
-                        <button class="quick-select-btn" data-preset="last_week">Semana passada</button>
-                        <button class="quick-select-btn" data-preset="this_month">Este mês</button>
-                        <button class="quick-select-btn" data-preset="last_month">Mês passado</button>
-                        <button class="quick-select-btn mt-4 active-preset" data-preset="custom">Período customizado</button>
-                        <div class="flex-grow"></div>
-                        <div class="flex gap-2 mt-4">
-                            <button id="date-picker-cancel-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-1.5 px-3 rounded-md text-sm transition-colors duration-200">Cancelar</button>
-                            <button id="date-picker-filter-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm transition-colors duration-200">Filtrar</button>
-                        </div>
-                    </div>
-                    <button id="date-picker-close-btn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 p-1.5 rounded-md"><i data-lucide="x" class="w-4 h-4"></i></button>
-                </div>
-            </div>
-            `;
             
         document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); showPage(dashboardHtml, 'nav-dashboard'); });
         document.getElementById('nav-vendas').addEventListener('click', (e) => { e.preventDefault(); showPage(vendasHtml, 'nav-vendas'); });
         document.getElementById('nav-estoque').addEventListener('click', (e) => { e.preventDefault(); showPage(estoqueHtml, 'nav-estoque'); });
         document.getElementById('nav-financeiro').addEventListener('click', (e) => { e.preventDefault(); showPage(financeiroHtml, 'nav-financeiro'); });
-        
-        // When navigating to Products, inject the product modal HTML as well
-        document.getElementById('link-produtos').addEventListener('click', (e) => { 
-            e.preventDefault(); 
-            showPage(productSystemHtml, 'nav-catalogo', runProductSystemScript, productModalHtml); 
-        });
+        document.getElementById('link-produtos').addEventListener('click', (e) => { e.preventDefault(); showPage(productSystemHtml, 'nav-catalogo', runProductSystemScript); });
         document.getElementById('link-clientes-fornecedores').addEventListener('click', (e) => { e.preventDefault(); showPage(clientesFornecedoresHtml, 'nav-catalogo', runClientesFornecedoresScript); });
 
-        // Initial page load for the dashboard
+        // Initial page load
         showPage(dashboardHtml, 'nav-dashboard');
         window.lucide.createIcons();
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
-        console.log("DOMContentLoaded fired."); // Debugging line
-        const loginPage = document.getElementById('login-page');
-        const dashboardPage = document.getElementById('dashboard-page');
         const loginForm = document.getElementById('login-form');
         const signupLink = document.getElementById('signup-link');
         const registerModal = document.getElementById('register-modal');
         const registerForm = document.getElementById('register-form');
         const registerModalCloseBtn = document.getElementById('register-modal-close');
 
-        console.log("Signup Link Element found (on DOMContentLoaded):", signupLink); // Debugging line
-        console.log("Register Modal Element found (on DOMContentLoaded):", registerModal); // Debugging line
-
-        window.dashboardInitialized = false;
-
-        // Function to show the register modal
         const showRegisterModal = () => {
-            console.log("showRegisterModal called."); // Debugging line
             if (registerModal) {
-                registerForm.reset(); // Clear form
+                registerForm.reset();
                 registerModal.classList.remove('hidden');
                 registerModal.querySelector('.modal-content').classList.remove('translate-y-[-20px]');
-                window.lucide.createIcons(); // Re-render icons in modal
-            } else {
-                console.error("Erro: register-modal não encontrado ao tentar mostrar.");
+                window.lucide.createIcons();
             }
         };
 
-        // Function to hide the register modal
         const hideRegisterModal = () => {
-            console.log("hideRegisterModal called."); // Debugging line
             if (registerModal) {
                 registerModal.querySelector('.modal-content').classList.add('translate-y-[-20px]');
-                setTimeout(() => {
-                    registerModal.classList.add('hidden');
-                }, 300); // Match CSS transition
-            } else {
-                console.error("Erro: register-modal não encontrado ao tentar esconder.");
+                setTimeout(() => registerModal.classList.add('hidden'), 300);
             }
         };
 
-        // Event listener for "Crie a sua conta gratuitamente" link
-        if (signupLink) { // Ensure the element exists before adding listener
-            signupLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log("Signup link clicked!"); // Debugging line
-                showRegisterModal();
-            });
-        } else {
-            console.error("Erro: O elemento 'signup-link' não foi encontrado no DOM. O link 'Crie a sua conta gratuitamente' não funcionará.");
-        }
+        signupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRegisterModal();
+        });
 
+        registerModalCloseBtn.addEventListener('click', hideRegisterModal);
 
-        // Event listener for closing the register modal
-        if (registerModalCloseBtn) {
-            registerModalCloseBtn.addEventListener('click', hideRegisterModal);
-        } else {
-            console.warn("Aviso: O botão 'register-modal-close' não foi encontrado.");
-        }
-
-
-        // Handle login form submission
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginForm.querySelector('#email').value;
             const password = loginForm.querySelector('#password').value;
-
-            if (!window.supabase) {
-                window.showMessage("Erro: Supabase não inicializado. Verifique as suas credenciais.", "error");
-                return;
-            }
-
-            // Supabase sign-in
-            const { data, error } = await window.supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-
+            if (!window.supabase) return window.showMessage("Erro: Supabase não inicializado.", "error");
+            
+            const { error } = await window.supabase.auth.signInWithPassword({ email, password });
             if (error) {
-                console.error('Supabase Login Error:', error.message);
                 window.showMessage(`Erro de Login: ${error.message}`, "error");
-            } else if (data.user) {
-                window.showMessage("Login bem-sucedido!", "success");
-                // Hide any previous login error messages
-                const loginErrorMessageDiv = document.getElementById('login-error-message');
-                if (loginErrorMessageDiv) {
-                    loginErrorMessageDiv.classList.add('hidden');
-                }
-                loginPage.classList.remove('active');
-                dashboardPage.classList.add('active');
-                if (!window.dashboardInitialized) {
-                    window.initializeDashboard();
-                    window.dashboardInitialized = true;
-                }
+            } else {
+                window.showMessage("Login bem-sucedido! A redirecionar...", "success");
             }
         });
 
-        // Handle register form submission
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = registerForm.querySelector('#register-name').value;
             const email = registerForm.querySelector('#register-email').value;
-            const phone = registerForm.querySelector('#register-phone').value; // Get phone number
+            const phone = registerForm.querySelector('#register-phone').value;
             const password = registerForm.querySelector('#register-password').value;
 
-            console.log("Attempting to register with:", { name, email, phone, password: '***' }); // Debugging line
+            if (!window.supabase) return window.showMessage("Erro: Supabase não inicializado.", "error");
+            if (!name || !email || !password) return window.showMessage("Por favor, preencha todos os campos obrigatórios.", "error");
 
-            if (!window.supabase) {
-                window.showMessage("Erro: Supabase não inicializado. Verifique as suas credenciais.", "error");
-                return;
-            }
-
-            if (!name || !email || !password) {
-                window.showMessage("Por favor, preencha todos os campos obrigatórios do registo.", "error");
-                return;
-            }
-
-            // Supabase sign-up
             const { data, error } = await window.supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        full_name: name, // Store full name in user metadata
-                        phone_number: phone // Store phone number in user metadata
-                    }
-                }
+                email,
+                password,
+                options: { data: { full_name: name, phone_number: phone } }
             });
 
             if (error) {
-                console.error('Supabase Signup Error:', error.message);
-                window.showMessage(`Erro de Registo: ${error.message}. Por favor, verifique se o email já está em uso ou se a senha é forte o suficiente.`, "error");
+                window.showMessage(`Erro de Registo: ${error.message}.`, "error");
             } else if (data.user) {
-                console.log("Supabase signup successful:", data.user); // Debugging line
-                window.showMessage("Registo bem-sucedido! Por favor, verifique o seu email para confirmar a conta.", "success");
+                window.showMessage("Registo bem-sucedido! Verifique o seu email para confirmar a conta.", "success");
                 hideRegisterModal();
-                // Optionally, pre-fill login form with new user's email
                 loginForm.querySelector('#email').value = email;
             }
         });
@@ -1929,3 +1226,4 @@
 </script>
 </body>
 </html>
+
