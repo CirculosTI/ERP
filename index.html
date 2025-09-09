@@ -469,7 +469,7 @@
         </div>
     </div>
     
-    <div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="false">Não</option><option value="true">Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
+    <div id="product-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white text-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] flex flex-col"><div class="p-4 flex justify-between items-center border-b border-gray-200 relative"><h3 class="text-xl font-semibold">Detalhes do Produto</h3><div class="flex gap-4 items-center"><button id="product-modal-cancel" class="border border-gray-300 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button type="submit" form="product-form" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Guardar produto</button><button id="product-modal-header-close" class="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><form id="product-form" class="flex-1 overflow-y-auto p-6 space-y-6"><div class="grid grid-cols-12 gap-6 items-start"><div class="col-span-3 flex flex-col items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-4 h-48 relative overflow-hidden"><img id="product-image-preview" src="https://placehold.co/160x160/cbd5e1/475569?text=Sem%20Imagem" alt="Pré-visualização da Imagem" class="max-w-full max-h-full object-contain rounded-md mb-2"><input type="file" id="product-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"><label for="product-image-input" class="absolute inset-0 flex items-center justify-center text-gray-500 hover:text-blue-500 cursor-pointer"><i data-lucide="camera" class="w-8 h-8"></i></label></div><div class="col-span-9 grid grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome*</label><input type="text" name="product-name" required class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Código (SKU)</label><div class="flex gap-2 mt-1"><input type="text" name="product-sku" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><button type="button" id="generate-barcode-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div><label class="block text-sm font-medium text-gray-700">Preço Venda</label><input type="number" step="0.01" name="product-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Estoque Atual</label><input type="number" name="stock_quantity" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-medium text-gray-700">Formato</label><select name="product-format" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Simples</option><option>Variável</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo</label><select name="product-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Produto</option><option>Serviço</option></select></div><div><label class="block text-sm font-medium text-gray-700">Condição</label><select name="product-condition" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Novo</option><option>Usado</option><option>Recondicionado</option></select></div></div></div><div class="border-b border-gray-200 mt-6"><nav class="-mb-px flex space-x-6" id="modal-tabs"><a href="#" class="tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-green-500 text-green-500" data-tab="caracteristicas">Características</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="imagens">Imagens</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="fornecedores">Fornecedores</a><a href="#" class="tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="tributacao">Tributação</a></nav></div><div id="tab-content-container" class="pt-6"><div id="caracteristicas" class="tab-content active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4"><!-- Existing characteristic fields --><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Marca</label><input type="text" name="product-brand" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Produção</label><select name="product-production" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Própria</option><option>Terceirizada</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Data de Validade</label><input type="date" name="product-expiration-date" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Frete Grátis</label><select name="product-free-shipping" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="false">Não</option><option value="true">Sim</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Líquido (kg)</label><input type="number" step="0.01" name="product-liquid-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Peso Bruto (kg)</label><input type="number" step="0.01" name="product-gross-weight" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Largura (cm)</label><input type="number" step="0.01" name="product-width" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Altura (cm)</label><input type="number" step="0.01" name="product-height" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Profundidade (cm)</label><input type="number" step="0.01" name="product-depth" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Volumes</label><input type="number" name="product-volumes" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Itens p/ caixa</label><input type="number" name="product-items-per-box" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Unidade de medida</label><select name="product-measurement-unit" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Centímetros</option><option>Metros</option><option>Polegadas</option></select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN</label><div class="flex gap-2 mt-1"><input type="text" name="product-gtinean" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"><button type="button" id="generate-gtinean-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Gerar Interno</button></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">GTIN/EAN Tributário</label><input type="text" name="product-gtinean-tax" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="SEM GTIN"></div></div><div id="imagens" class="tab-content flex flex-col items-center p-4 gap-4"><p class="text-gray-600">Arraste e solte imagens ou clique no ícone para carregar.</p><div class="w-full flex items-center gap-2 mb-4"><input type="url" id="image-url-input" class="flex-1 bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Cole o link direto da imagem aqui (terminando em .jpg, .png, etc.)"><button type="button" id="add-image-url-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md text-sm flex-shrink-0 transition-colors duration-200">Adicionar por Link</button></div><div id="image-drop-area" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full p-4 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 min-h-[150px] items-center justify-center"></div></div><div id="fornecedores" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Gerir Fornecedores do Produto</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">Nome do Fornecedor</label><input type="text" name="supplier-name" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nome do fornecedor"></div><div><label class="block text-sm font-medium text-gray-700">Código do Fornecedor</label><input type="text" name="supplier-code" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Código de referência do fornecedor"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Preço de Custo</label><input type="number" step="0.01" name="supplier-cost-price" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="0.00"></div></div><button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2 transition-colors duration-200"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Fornecedor</button></div><div id="tributacao" class="tab-content space-y-4"><h4 class="text-lg font-semibold text-gray-800 mb-4">Configurações de Tributação</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700">NCM (Nomenclatura Comum do Mercosul)</label><input type="text" name="tax-ncm" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 8471.30.12"></div><div><label class="block text-sm font-medium text-gray-700">CEST (Código Especificador da Substituição Tributária)</label><input type="text" name="tax-cest" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Ex: 28.064.00"></div><div><label class="block text-sm font-medium text-gray-700">Origem da Mercadoria</label><select name="tax-origin" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option value="0">0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8</option><option value="1">1 - Estrangeira - Importação direta</option><option value="2">2 - Estrangeira - Adquirida no mercado interno</option></select></div><div><label class="block text-sm font-medium text-gray-700">Tipo de Tributação</label><select name="tax-type" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"><option>Normal</option><option>Simples Nacional</option></select></div></div></div></div></form></div></div>
     <div id="import-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"><div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl p-6"><div class="flex justify-between items-center border-b pb-3 mb-4"><h3 class="text-xl font-semibold text-gray-800">Importar Produtos em Massa</h3><button id="import-modal-close" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="space-y-6 mt-4"><div><h4 class="font-semibold text-gray-700">Passo 1: Baixe o nosso modelo</h4><p class="text-sm text-gray-600 mt-1">Para garantir que os seus dados são importados corretamente, use o nosso ficheiro modelo. Preencha-o com os seus produtos antes de carregar.</p><button id="download-template-btn" class="mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-md flex items-center gap-2 transition-colors duration-200 border border-gray-300"><i data-lucide="download-cloud" class="w-4 h-4"></i> Baixar Modelo (CSV)</button></div><div class="border-t border-gray-200"></div><div><h4 class="font-semibold text-gray-700">Passo 2: Carregue o seu ficheiro preenchido</h4><p class="text-sm text-gray-600 mt-1">Formatos suportados: CSV, XLS, XLSX.</p><div id="import-drop-area" class="mt-3 flex justify-center items-center w-full h-32 px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-blue-500 bg-gray-50"><div class="text-center"><i data-lucide="upload-cloud" class="mx-auto h-10 w-10 text-gray-400"></i><p id="import-file-text" class="mt-2 text-sm text-gray-600"><span class="font-semibold">Clique para carregar</span> ou arraste e solte</p><input id="import-file-input" type="file" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"></div></div><p id="import-file-name" class="text-sm text-gray-500 mt-2"></p></div></div><div class="flex justify-end items-center border-t pt-4 mt-6 gap-4"><button id="import-modal-cancel" class="border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-semibold py-1.5 px-3 rounded-md transition-colors duration-200">Cancelar</button><button id="process-import-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-md transition-colors duration-200 disabled:bg-gray-400" disabled>Importar Produtos</button></div></div></div>
     <div id="date-picker-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
         <div class="date-picker-modal-content w-full max-w-4xl p-6 flex gap-6">
@@ -836,6 +836,7 @@
                         productForm.querySelector('[name="product-name"]').value = product.name ?? '';
                         productForm.querySelector('[name="product-sku"]').value = product.sku ?? '';
                         productForm.querySelector('[name="product-price"]').value = product.sale_price ?? '';
+                        productForm.querySelector('[name="stock_quantity"]').value = product.stock_quantity ?? 0;
                         productForm.querySelector('[name="product-format"]').value = product.format ?? 'Simples';
                         productForm.querySelector('[name="product-type"]').value = product.type ?? 'Produto';
                         productForm.querySelector('[name="product-condition"]').value = product.condition ?? 'Novo';
@@ -870,6 +871,7 @@
                             name: formData.get('product-name'),
                             sku: formData.get('product-sku'),
                             sale_price: parseFloat(formData.get('product-price')) || null,
+                            stock_quantity: parseInt(formData.get('stock_quantity')) || 0,
                             format: formData.get('product-format'),
                             type: formData.get('product-type'),
                             condition: formData.get('product-condition'),
@@ -1650,6 +1652,10 @@
                 const subtotalDisplay = document.getElementById('sale-subtotal');
                 const totalDisplay = document.getElementById('sale-total');
                 const discountInput = document.getElementById('sale-discount');
+                const paymentMethodSelect = document.getElementById('sale-payment-method');
+                const finishSaleBtn = document.getElementById('finish-sale-btn');
+                const newSaleBtn = document.getElementById('new-sale-btn');
+
 
                 let saleItems = [];
                 let selectedCustomer = null;
@@ -1703,7 +1709,7 @@
                     }
                      const { data, error } = await supabase
                         .from('products')
-                        .select('id, name, sku, sale_price')
+                        .select('id, name, sku, sale_price, stock_quantity')
                         .or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`)
                         .limit(5);
                     
@@ -1715,7 +1721,7 @@
                     
                     data.forEach(product => {
                         const div = document.createElement('div');
-                        div.innerHTML = `<span class="font-semibold">${product.name}</span> <span class="text-xs text-gray-500">(SKU: ${product.sku || 'N/A'})</span>`;
+                        div.innerHTML = `<span class="font-semibold">${product.name}</span> <span class="text-xs text-gray-500">(Estoque: ${product.stock_quantity ?? 0})</span>`;
                         div.dataset.productId = product.id;
                         div.addEventListener('click', () => {
                            addItemToSale(product);
@@ -1729,8 +1735,10 @@
 
                 const updateTotals = () => {
                     const subtotal = saleItems.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
-                    const discount = parseFloat(discountInput.value) || 0;
-                    const total = subtotal - discount;
+                    const totalItemDiscount = saleItems.reduce((acc, item) => acc + item.discount, 0);
+                    const globalDiscount = parseFloat(discountInput.value) || 0;
+                    const totalDiscountValue = totalItemDiscount + globalDiscount;
+                    const total = subtotal - totalDiscountValue;
 
                     subtotalDisplay.textContent = `R$ ${subtotal.toFixed(2)}`;
                     totalDisplay.textContent = `R$ ${total.toFixed(2)}`;
@@ -1739,15 +1747,17 @@
                 const renderSaleItems = () => {
                     saleItemsTableBody.innerHTML = '';
                     if (saleItems.length === 0) {
-                         saleItemsTableBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">Nenhum produto adicionado.</td></tr>';
+                         saleItemsTableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">Nenhum produto adicionado.</td></tr>';
                     } else {
                         saleItems.forEach((item, index) => {
                             const tr = document.createElement('tr');
+                            const subtotal = (item.quantity * item.unit_price) - item.discount;
                             tr.innerHTML = `
-                                <td class="p-3 font-medium">${item.name}</td>
-                                <td class="p-3 text-center"><input type="number" value="${item.quantity}" min="1" class="w-16 text-center border rounded-md py-1 quantity-input" data-index="${index}"></td>
+                                <td class="p-3 font-medium">${item.name}<br><span class="text-xs text-gray-500">Estoque: ${item.stock_available}</span></td>
+                                <td class="p-3 text-center"><input type="number" value="${item.quantity}" min="1" max="${item.stock_available}" class="w-16 text-center border rounded-md py-1 quantity-input" data-index="${index}"></td>
                                 <td class="p-3 text-right">R$ ${item.unit_price.toFixed(2)}</td>
-                                <td class="p-3 text-right font-semibold">R$ ${(item.quantity * item.unit_price).toFixed(2)}</td>
+                                <td class="p-3 text-right"><input type="number" value="${item.discount.toFixed(2)}" min="0" step="0.01" class="w-24 text-right border rounded-md py-1 px-2 discount-input" data-index="${index}"></td>
+                                <td class="p-3 text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>
                                 <td class="p-3 text-center"><button class="text-red-500 hover:text-red-700 remove-item-btn" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
                             `;
                             saleItemsTableBody.appendChild(tr);
@@ -1760,38 +1770,139 @@
                 const addItemToSale = (product) => {
                     const existingItem = saleItems.find(item => item.product_id === product.id);
                     if (existingItem) {
-                        existingItem.quantity++;
+                        if (existingItem.quantity < existingItem.stock_available) {
+                           existingItem.quantity++;
+                        } else {
+                            window.showMessage('Quantidade máxima em estoque atingida.', 'error');
+                        }
                     } else {
-                        saleItems.push({
-                            product_id: product.id,
-                            name: product.name,
-                            quantity: 1,
-                            unit_price: product.sale_price || 0,
-                        });
+                        if ((product.stock_quantity ?? 0) > 0) {
+                             saleItems.push({
+                                product_id: product.id,
+                                name: product.name,
+                                quantity: 1,
+                                unit_price: product.sale_price || 0,
+                                stock_available: product.stock_quantity ?? 0,
+                                discount: 0
+                            });
+                        } else {
+                             window.showMessage('Produto sem estoque disponível.', 'error');
+                        }
                     }
                     renderSaleItems();
                 };
                 
+                const resetSale = () => {
+                    saleItems = [];
+                    selectedCustomer = null;
+                    customerSearchInput.value = '';
+                    productSearchInput.value = '';
+                    discountInput.value = '';
+                    renderSaleItems();
+                };
+
+                finishSaleBtn.addEventListener('click', async () => {
+                    if (!selectedCustomer) {
+                        window.showMessage('Por favor, selecione um cliente.', 'error');
+                        return;
+                    }
+                    if (saleItems.length === 0) {
+                        window.showMessage('Adicione pelo menos um produto à venda.', 'error');
+                        return;
+                    }
+
+                    const subtotal = saleItems.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
+                    const totalItemDiscount = saleItems.reduce((acc, item) => acc + item.discount, 0);
+                    const globalDiscount = parseFloat(discountInput.value) || 0;
+                    const totalDiscountValue = totalItemDiscount + globalDiscount;
+                    const final_amount = subtotal - totalDiscountValue;
+
+                    // 1. Insert into sales table
+                    const { data: saleData, error: saleError } = await supabase
+                        .from('sales')
+                        .insert({
+                            user_id: window.userId,
+                            contact_id: selectedCustomer.id,
+                            total_amount: subtotal,
+                            discount: totalDiscountValue,
+                            final_amount: final_amount,
+                            payment_method: paymentMethodSelect.value,
+                            status: 'Concluída'
+                        })
+                        .select('id')
+                        .single();
+
+                    if (saleError) {
+                        console.error('Error saving sale:', saleError);
+                        window.showMessage(`Erro ao guardar a venda: ${saleError.message}`, 'error');
+                        return;
+                    }
+
+                    // 2. Prepare and insert into sale_items table
+                    const saleId = saleData.id;
+                    const itemsToInsert = saleItems.map(item => ({
+                        sale_id: saleId,
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                        discount: item.discount,
+                        subtotal: (item.quantity * item.unit_price) - item.discount,
+                        user_id: window.userId
+                    }));
+
+                    const { error: itemsError } = await supabase
+                        .from('sale_items')
+                        .insert(itemsToInsert);
+                    
+                    if (itemsError) {
+                        console.error('Error saving sale items:', itemsError);
+                        window.showMessage(`Erro ao guardar os itens da venda: ${itemsError.message}`, 'error');
+                        await supabase.from('sales').delete().eq('id', saleId);
+                        return;
+                    }
+                    
+                    window.showMessage('Venda finalizada com sucesso!', 'success');
+                    resetSale();
+                });
+                
+                newSaleBtn.addEventListener('click', resetSale);
+
+                saleItemsTableBody.addEventListener('input', (e) => {
+                    const target = e.target;
+                    if (target.matches('.quantity-input')) {
+                        const index = parseInt(target.dataset.index, 10);
+                        let newQuantity = parseInt(target.value, 10);
+                        if (isNaN(newQuantity) || newQuantity < 1) {
+                            newQuantity = 1;
+                        }
+                        if (newQuantity > saleItems[index].stock_available) {
+                            newQuantity = saleItems[index].stock_available;
+                            window.showMessage('Quantidade máxima em estoque atingida.', 'warning');
+                        }
+                        saleItems[index].quantity = newQuantity;
+                        target.value = newQuantity; // Correct input value if it was invalid
+                        renderSaleItems();
+                    } else if (target.matches('.discount-input')) {
+                         const index = parseInt(target.dataset.index, 10);
+                         const newDiscount = parseFloat(target.value) || 0;
+                         const maxDiscount = saleItems[index].quantity * saleItems[index].unit_price;
+                         if (newDiscount > maxDiscount) {
+                            saleItems[index].discount = maxDiscount;
+                            target.value = maxDiscount.toFixed(2);
+                            window.showMessage('Desconto não pode ser maior que o subtotal do item.', 'warning');
+                         } else {
+                            saleItems[index].discount = newDiscount;
+                         }
+                         renderSaleItems();
+                    }
+                });
+
                 saleItemsTableBody.addEventListener('click', (e) => {
                     const removeBtn = e.target.closest('.remove-item-btn');
                     if (removeBtn) {
                         const index = parseInt(removeBtn.dataset.index, 10);
                         saleItems.splice(index, 1);
                         renderSaleItems();
-                    }
-                });
-
-                saleItemsTableBody.addEventListener('change', (e) => {
-                    const quantityInput = e.target.closest('.quantity-input');
-                    if(quantityInput) {
-                        const index = parseInt(quantityInput.dataset.index, 10);
-                        const newQuantity = parseInt(quantityInput.value, 10);
-                        if (newQuantity > 0) {
-                            saleItems[index].quantity = newQuantity;
-                        } else {
-                            saleItems.splice(index, 1);
-                        }
-                         renderSaleItems();
                     }
                 });
 
@@ -1969,7 +2080,7 @@
                              <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
                                 <i data-lucide="list" class="w-4 h-4"></i> Listar Vendas
                             </button>
-                            <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
+                            <button id="new-sale-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
                                 <i data-lucide="plus" class="w-4 h-4"></i> Nova Venda
                             </button>
                         </div>
@@ -2001,6 +2112,7 @@
                                                 <th class="p-3 text-left font-semibold text-gray-600">Produto</th>
                                                 <th class="p-3 text-center font-semibold text-gray-600 w-24">Qtd.</th>
                                                 <th class="p-3 text-right font-semibold text-gray-600">Preço Unit.</th>
+                                                <th class="p-3 text-right font-semibold text-gray-600 w-28">Desconto (R$)</th>
                                                 <th class="p-3 text-right font-semibold text-gray-600">Subtotal</th>
                                                 <th class="p-3 text-center font-semibold text-gray-600">Ação</th>
                                             </tr>
@@ -2021,7 +2133,7 @@
                                     <span id="sale-subtotal" class="font-semibold text-gray-800">R$ 0,00</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-gray-600">Desconto</span>
+                                    <span class="text-gray-600">Desconto Geral</span>
                                      <input type="number" step="0.01" id="sale-discount" class="w-24 text-right border rounded-md py-1 px-2" placeholder="0,00">
                                 </div>
                             </div>
