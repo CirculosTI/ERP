@@ -381,7 +381,7 @@
                             <div>
                                 <div class="flex justify-between items-center">
                                     <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                                    <a href="#" class="text-sm text-blue-500 hover:underline">Esqueceu a senha?</a>
+                                    <a href="#" id="esqueci-senha-link" class="text-sm text-blue-500 hover:underline">Esqueceu a senha?</a>
                                 </div>
                                 <div class="mt-1 relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="lock" class="w-5 h-5 text-gray-400"></i></div>
@@ -464,6 +464,25 @@
                 </div>
                 <div>
                     <button type="submit" class="w-full bg-green-500 text-white font-semibold py-2.5 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">Registar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="esqueci-senha-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Recuperar Senha</h3>
+                <button id="esqueci-senha-modal-close" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="esqueci-senha-form" class="space-y-4">
+                <p class="text-sm text-gray-600">Insira o seu email de registo. Enviaremos um link para que possa definir uma nova senha.</p>
+                <div>
+                    <label for="reset-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="reset-email" name="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="O seu email de registo">
+                </div>
+                <div>
+                    <button type="submit" class="w-full bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Enviar Link de Recuperação</button>
                 </div>
             </form>
         </div>
@@ -2077,7 +2096,7 @@
                             <h1 class="text-2xl font-bold text-gray-800">Ponto de Venda</h1>
                         </div>
                         <div class="flex items-center gap-4">
-                             <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
+                             <button id="list-sales-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
                                 <i data-lucide="list" class="w-4 h-4"></i> Listar Vendas
                             </button>
                             <button id="new-sale-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2">
@@ -2247,22 +2266,58 @@
         const registerModal = document.getElementById('register-modal');
         const registerForm = document.getElementById('register-form');
         const registerModalCloseBtn = document.getElementById('register-modal-close');
+        const esqueciSenhaLink = document.getElementById('esqueci-senha-link');
+        const esqueciSenhaModal = document.getElementById('esqueci-senha-modal');
+        const esqueciSenhaForm = document.getElementById('esqueci-senha-form');
+        const esqueciSenhaModalCloseBtn = document.getElementById('esqueci-senha-modal-close');
+
 
         const showRegisterModal = () => {
             if (registerModal) {
                 registerForm.reset();
                 registerModal.classList.remove('hidden');
-                registerModal.querySelector('.modal-content').classList.remove('translate-y-[-20px]');
-                window.lucide.createIcons();
             }
         };
 
         const hideRegisterModal = () => {
-            if (registerModal) {
-                registerModal.querySelector('.modal-content').classList.add('translate-y-[-20px]');
-                setTimeout(() => registerModal.classList.add('hidden'), 300);
-            }
+             if (registerModal) registerModal.classList.add('hidden');
         };
+        
+        const showEsqueciSenhaModal = () => {
+            if(esqueciSenhaModal) {
+                esqueciSenhaForm.reset();
+                esqueciSenhaModal.classList.remove('hidden');
+            }
+        }
+        
+        const hideEsqueciSenhaModal = () => {
+            if(esqueciSenhaModal) esqueciSenhaModal.classList.add('hidden');
+        }
+
+        esqueciSenhaLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showEsqueciSenhaModal();
+        });
+
+        esqueciSenhaModalCloseBtn.addEventListener('click', hideEsqueciSenhaModal);
+
+        esqueciSenhaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = esqueciSenhaForm.querySelector('#reset-email').value;
+            if(!window.supabase) return window.showMessage("Erro: Supabase não inicializado.", "error");
+
+            const { error } = await window.supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href.split('?')[0] // Redirect to the current page without query params
+            });
+
+            if (error) {
+                window.showMessage(`Erro: ${error.message}`, 'error');
+            } else {
+                window.showMessage('Link de recuperação enviado! Verifique o seu email.', 'success');
+                hideEsqueciSenhaModal();
+            }
+        });
+
 
         signupLink.addEventListener('click', (e) => {
             e.preventDefault();
