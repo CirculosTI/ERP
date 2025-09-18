@@ -635,6 +635,7 @@
             </div>
             <form id="financial-transaction-form" class="space-y-4">
                 <input type="hidden" name="transaction_id">
+                <input type="hidden" name="type">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Descrição*</label>
                     <input type="text" name="description" required class="w-full mt-1 border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -650,7 +651,7 @@
                     </div>
                 </div>
                 <div>
-                     <label class="block text-sm font-medium text-gray-700">Fornecedor (Opcional)</label>
+                     <label id="contact-label" class="block text-sm font-medium text-gray-700">Fornecedor (Opcional)</label>
                      <select name="contact_id" class="w-full mt-1 border border-gray-300 rounded-md p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                      </select>
                 </div>
@@ -796,12 +797,12 @@
             const salesHubHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Módulo de Vendas</h1><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div id="go-to-pos" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer flex flex-col items-center text-center"><i data-lucide="shopping-cart" class="w-16 h-16 text-blue-500 mb-4"></i><h2 class="text-xl font-bold text-gray-800">Ponto de Venda</h2><p class="text-gray-600 mt-2">Crie e finalize vendas diretas de forma rápida e eficiente.</p></div><div id="go-to-proposals" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer flex flex-col items-center text-center"><i data-lucide="file-text" class="w-16 h-16 text-green-500 mb-4"></i><h2 class="text-xl font-bold text-gray-800">Propostas / Orçamentos</h2><p class="text-gray-600 mt-2">Crie, gira e converta orçamentos em vendas.</p></div></div></div>`;
             const salesListHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Histórico de Vendas</h1></div><div class="flex items-center gap-4"><div class="relative"><input type="text" id="sales-search-input" class="w-64 pl-10 pr-4 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Pesquisar por cliente..."><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div></div><button id="back-to-pos-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar ao PDV</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Cliente</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor Total</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="sales-list-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
             const proposalsListHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Propostas e Orçamentos</h1></div><div class="flex items-center gap-4"><button id="back-to-sales-hub-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button><button id="new-proposal-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nova Proposta</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Cliente</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Validade</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor Total</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="proposals-list-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
-            const newProposalHtml = `<div class="h-full flex flex-col"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Nova Proposta</h1></div><div class="flex items-center gap-4"><button id="save-proposal-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Guardar Proposta</button></div></header><div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden"><div class="lg:col-span-2 flex flex-col gap-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div id="customer-search-container" class="relative"><label class="block text-sm font-medium text-gray-700">Cliente</label><input type="text" id="proposal-customer-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar cliente..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="user-search" class="w-5 h-5 text-gray-400"></i></div><div id="customer-search-results" class="search-results hidden"></div></div><div id="product-search-container-proposal" class="relative"><label class="block text-sm font-medium text-gray-700">Adicionar Produto</label><input type="text" id="proposal-product-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar produto..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div><div id="product-search-results" class="search-results hidden"></div></div></div><div class="bg-white rounded-lg shadow overflow-hidden flex-1 flex flex-col"><div class="overflow-y-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr><th class="p-3 text-left font-semibold text-gray-600">Produto</th><th class="p-3 text-center font-semibold text-gray-600 w-24">Qtd.</th><th class="p-3 text-right font-semibold text-gray-600">Preço Unit.</th><th class="p-3 text-right font-semibold text-gray-600">Subtotal</th><th class="p-3 text-center font-semibold text-gray-600">Ação</th></tr></thead><tbody id="proposal-items-table"></tbody></table></div></div></div><div class="bg-white rounded-lg shadow p-6 flex flex-col"><h3 class="text-lg font-bold text-gray-800 border-b pb-3">Resumo da Proposta</h3><div class="flex-1 mt-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Válido até</label><input type="date" id="proposal-valid-until" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm"></div></div><div class="border-t pt-4 space-y-4"><div class="flex justify-between items-center text-xl"><span class="font-bold text-gray-800">TOTAL</span><span id="proposal-total" class="font-bold text-blue-600">R$ 0,00</span></div></div></div></div></div>`;
+            const newProposalHtml = `<div class="h-full flex flex-col"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 id="proposal-page-title" class="text-2xl font-bold text-gray-800">Nova Proposta</h1></div><div class="flex items-center gap-4"><button id="list-proposals-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> Listar Propostas</button><button id="save-proposal-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Guardar Proposta</button></div></header><div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden"><div class="lg:col-span-2 flex flex-col gap-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div id="customer-search-container" class="relative"><label class="block text-sm font-medium text-gray-700">Cliente</label><input type="text" id="proposal-customer-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar cliente..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="user-search" class="w-5 h-5 text-gray-400"></i></div><div id="proposal-customer-search-results" class="search-results hidden"></div></div><div id="product-search-container-proposal" class="relative"><label class="block text-sm font-medium text-gray-700">Adicionar Produto</label><input type="text" id="proposal-product-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar produto..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div><div id="proposal-product-search-results" class="search-results hidden"></div></div></div><div class="bg-white rounded-lg shadow overflow-hidden flex-1 flex flex-col"><div class="overflow-y-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr><th class="p-3 text-left font-semibold text-gray-600">Produto</th><th class="p-3 text-center font-semibold text-gray-600 w-24">Qtd.</th><th class="p-3 text-right font-semibold text-gray-600">Preço Unit.</th><th class="p-3 text-right font-semibold text-gray-600">Subtotal</th><th class="p-3 text-center font-semibold text-gray-600">Ação</th></tr></thead><tbody id="proposal-items-table"></tbody></table></div></div></div><div class="bg-white rounded-lg shadow p-6 flex flex-col"><h3 class="text-lg font-bold text-gray-800 border-b pb-3">Resumo da Proposta</h3><div class="flex-1 mt-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Válido até</label><input type="date" id="proposal-valid-until" class="w-full bg-white border border-gray-300 rounded-md p-2 shadow-sm"></div></div><div class="border-t pt-4 space-y-4"><div class="flex justify-between items-center text-xl"><span class="font-bold text-gray-800">TOTAL</span><span id="proposal-total" class="font-bold text-blue-600">R$ 0,00</span></div></div></div></div></div>`;
             const estoqueHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Controlo de Inventário</h1></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Produto</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">SKU</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Estoque Atual</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="inventory-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
-            const financeiroHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Financeiro</h1></div><div class="flex items-center gap-4"><button id="add-expense-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nova Despesa</button></div></header><div class="flex-1 flex flex-col p-8 gap-6"><div class="border-b border-gray-200"><nav class="-mb-px flex space-x-6" id="finance-tabs"><a href="#" class="finance-tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm" data-tab="contas-a-pagar">Contas a Pagar</a><a href="#" class="finance-tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="contas-a-receber">Contas a Receber</a></nav></div><div id="finance-tab-content-container" class="flex-1 overflow-hidden"><div id="contas-a-pagar" class="finance-tab-content active h-full overflow-y-auto"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Descrição</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Fornecedor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Vencimento</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="accounts-payable-body" class="divide-y divide-gray-200"></tbody></table></div></div><div id="contas-a-receber" class="finance-tab-content h-full overflow-y-auto"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Cliente</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Vencimento</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="accounts-receivable-body" class="divide-y divide-gray-200"></tbody></table></div></div></div></div></main>`;
+            const financeiroHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Financeiro</h1></div><div class="flex items-center gap-4"><button id="add-revenue-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nova Receita</button><button id="add-expense-btn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Nova Despesa</button></div></header><div class="flex-1 flex flex-col p-8 gap-6"><div class="border-b border-gray-200"><nav class="-mb-px flex space-x-6" id="finance-tabs"><a href="#" class="finance-tab-link active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm" data-tab="contas-a-pagar">Contas a Pagar</a><a href="#" class="finance-tab-link whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" data-tab="contas-a-receber">Contas a Receber</a></nav></div><div id="finance-tab-content-container" class="flex-1 overflow-hidden"><div id="contas-a-pagar" class="finance-tab-content active h-full overflow-y-auto"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Descrição</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Fornecedor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Vencimento</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="accounts-payable-body" class="divide-y divide-gray-200"></tbody></table></div></div><div id="contas-a-receber" class="finance-tab-content h-full overflow-y-auto"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Descrição</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Cliente</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Vencimento</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="accounts-receivable-body" class="divide-y divide-gray-200"></tbody></table></div></div></div></div></main>`;
             const purchasesHubHtml = `<div class="p-8"><h1 class="text-3xl font-bold text-gray-800 mb-8">Módulo de Compras</h1><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div id="go-to-new-purchase" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer flex flex-col items-center text-center"><i data-lucide="shopping-basket" class="w-16 h-16 text-blue-500 mb-4"></i><h2 class="text-xl font-bold text-gray-800">Nova Compra</h2><p class="text-gray-600 mt-2">Registe a entrada de novos produtos no seu estoque.</p></div><div id="go-to-purchases-list" class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer flex flex-col items-center text-center"><i data-lucide="archive" class="w-16 h-16 text-green-500 mb-4"></i><h2 class="text-xl font-bold text-gray-800">Listar Compras</h2><p class="text-gray-600 mt-2">Veja o histórico de todas as compras realizadas.</p></div></div></div>`;
-            const newPurchaseHtml = `<div class="h-full flex flex-col"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Nova Compra</h1></div></header><div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden"><div class="lg:col-span-2 flex flex-col gap-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div id="supplier-search-container" class="relative"><label class="block text-sm font-medium text-gray-700">Fornecedor</label><input type="text" id="purchase-supplier-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar fornecedor..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="user-search" class="w-5 h-5 text-gray-400"></i></div><div id="supplier-search-results" class="search-results hidden"></div></div><div id="product-search-container-purchase" class="relative"><label class="block text-sm font-medium text-gray-700">Adicionar Produto</label><input type="text" id="purchase-product-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar por código ou nome..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div><div id="product-search-results" class="search-results hidden"></div></div></div><div class="bg-white rounded-lg shadow overflow-hidden flex-1 flex flex-col"><div class="overflow-y-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr><th class="p-3 text-left font-semibold text-gray-600">Produto</th><th class="p-3 text-center font-semibold text-gray-600 w-24">Qtd.</th><th class="p-3 text-right font-semibold text-gray-600">Preço Custo</th><th class="p-3 text-right font-semibold text-gray-600">Subtotal</th><th class="p-3 text-center font-semibold text-gray-600">Ação</th></tr></thead><tbody id="purchase-items-table" class="divide-y divide-gray-200"></tbody></table></div></div></div><div class="bg-white rounded-lg shadow p-6 flex flex-col"><h3 class="text-lg font-bold text-gray-800 border-b pb-3">Resumo da Compra</h3><div class="flex-1"></div><div class="border-t pt-4 space-y-4"><div class="flex justify-between items-center text-xl"><span class="font-bold text-gray-800">TOTAL</span><span id="purchase-total" class="font-bold text-blue-600">R$ 0,00</span></div><button id="finish-purchase-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md flex items-center justify-center gap-2 text-lg"><i data-lucide="check-circle" class="w-6 h-6"></i>Finalizar Compra</button></div></div></div></div>`;
-            const purchasesListHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Histórico de Compras</h1></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Fornecedor</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor Total</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="purchases-list-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
+            const newPurchaseHtml = `<div class="h-full flex flex-col"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Nova Compra</h1></div><div class="flex items-center gap-4"><button id="list-purchases-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> Listar Compras</button></div></header><div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden"><div class="lg:col-span-2 flex flex-col gap-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div id="supplier-search-container" class="relative"><label class="block text-sm font-medium text-gray-700">Fornecedor</label><input type="text" id="purchase-supplier-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar fornecedor..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="user-search" class="w-5 h-5 text-gray-400"></i></div><div id="supplier-search-results" class="search-results hidden"></div></div><div id="product-search-container-purchase" class="relative"><label class="block text-sm font-medium text-gray-700">Adicionar Produto</label><input type="text" id="purchase-product-search" class="w-full mt-1 pl-10 pr-4 py-2 border rounded-md" placeholder="Pesquisar por código ou nome..."><div class="absolute inset-y-0 left-0 top-6 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-gray-400"></i></div><div id="product-search-results" class="search-results hidden"></div></div></div><div class="bg-white rounded-lg shadow overflow-hidden flex-1 flex flex-col"><div class="overflow-y-auto"><table class="w-full text-sm"><thead class="bg-gray-100"><tr><th class="p-3 text-left font-semibold text-gray-600">Produto</th><th class="p-3 text-center font-semibold text-gray-600 w-24">Qtd.</th><th class="p-3 text-right font-semibold text-gray-600">Preço Custo</th><th class="p-3 text-right font-semibold text-gray-600">Subtotal</th><th class="p-3 text-center font-semibold text-gray-600">Ação</th></tr></thead><tbody id="purchase-items-table" class="divide-y divide-gray-200"></tbody></table></div></div></div><div class="bg-white rounded-lg shadow p-6 flex flex-col"><h3 class="text-lg font-bold text-gray-800 border-b pb-3">Resumo da Compra</h3><div class="flex-1"></div><div class="border-t pt-4 space-y-4"><div class="flex justify-between items-center text-xl"><span class="font-bold text-gray-800">TOTAL</span><span id="purchase-total" class="font-bold text-blue-600">R$ 0,00</span></div><button id="finish-purchase-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md flex items-center justify-center gap-2 text-lg"><i data-lucide="check-circle" class="w-6 h-6"></i>Finalizar Compra</button></div></div></div></div>`;
+            const purchasesListHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Histórico de Compras</h1></div><div class="flex items-center gap-4"><button id="back-to-purchases-hub-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button></div></header><div class="flex-1 overflow-y-auto p-8"><div class="bg-white rounded-lg shadow overflow-hidden"><table class="w-full"><thead class="bg-gray-50"><tr><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Fornecedor</th><th class="p-3 text-right text-xs font-semibold text-gray-600 uppercase">Valor Total</th><th class="p-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th><th class="p-3 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th></tr></thead><tbody id="purchases-list-table-body" class="divide-y divide-gray-200"></tbody></table></div></div></main>`;
             const relatoriosHtml = `<main class="flex-1 flex flex-col overflow-hidden"><header class="bg-white p-4 px-8 flex items-center justify-between flex-shrink-0 border-b"><div><h1 class="text-2xl font-bold text-gray-800">Relatório de Vendas</h1></div><div class="flex items-center gap-4"><div class="flex items-center gap-2"><label for="report-start-date" class="text-sm font-medium">De:</label><input type="date" id="report-start-date" class="border-gray-300 rounded-md shadow-sm p-1.5 text-sm"><label for="report-end-date" class="text-sm font-medium">Até:</label><input type="date" id="report-end-date" class="border-gray-300 rounded-md shadow-sm p-1.5 text-sm"></div><button id="generate-report-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-md flex items-center gap-2"><i data-lucide="search" class="w-4 h-4"></i> Gerar</button></div></header><div class="flex-1 overflow-y-auto p-8"><div id="report-summary" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div><div id="report-results" class="bg-white rounded-lg shadow overflow-hidden"></div></div></main>`;
             
             // --- PAGE SCRIPT RUNNERS ---
@@ -1225,6 +1226,25 @@
                     saleTotalEl.textContent = window.formatCurrency(total);
                 };
 
+                 if (prefillData && prefillData.proposal) {
+                    const { proposal, items } = prefillData.proposal;
+                    selectedCustomer = { id: proposal.contact_id, name: proposal.contacts.name };
+                    customerSearchInput.value = selectedCustomer.name;
+                    
+                    saleItems = items.map(item => ({
+                        product_id: item.product_id,
+                        name: item.products.name,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                        stock: item.products.stock_quantity
+                    }));
+                    
+                    setTimeout(() => {
+                        renderSaleItems();
+                        window.showMessage(`Proposta #${proposal.id.substring(0,6)} carregada. Finalize a venda.`, 'info');
+                    }, 100);
+                }
+
                 saleItemsTable.addEventListener('input', (e) => {
                     if(e.target.classList.contains('quantity-input')) {
                         const index = e.target.dataset.index;
@@ -1300,39 +1320,397 @@
             };
             const runSalesHubScript = () => {
                 document.getElementById('go-to-pos').addEventListener('click', () => showPage(vendasHtml, 'nav-vendas', runVendasScript));
-                document.getElementById('go-to-proposals').addEventListener('click', () => window.showMessage('Módulo de Propostas em desenvolvimento.', 'info'));
+                document.getElementById('go-to-proposals').addEventListener('click', () => showPage(proposalsListHtml, 'nav-vendas', runProposalsListScript));
             };
-            const runProposalsListScript = () => { window.showMessage('Módulo de Propostas em desenvolvimento.', 'info'); };
-            const runNewProposalScript = (proposalToEdit = null) => { window.showMessage('Módulo de Propostas em desenvolvimento.', 'info'); };
+            const runProposalsListScript = async () => {
+                const tableBody = document.getElementById('proposals-list-table-body');
+                
+                const getStatusBadge = (status) => {
+                    switch (status) {
+                        case 'Aprovada': return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">${status}</span>`;
+                        case 'Rejeitada': return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">${status}</span>`;
+                        case 'Pendente': default: return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${status}</span>`;
+                    }
+                };
+
+                const fetchProposals = async () => {
+                     const { data, error } = await window.supabase.from('proposals').select(`*, contacts(name)`).eq('user_id', window.userId).order('created_at', { ascending: false });
+                    if (error) return window.showMessage("Erro ao carregar propostas.", "error");
+                    
+                    tableBody.innerHTML = data.map(p => `
+                        <tr>
+                            <td class="p-3">${window.formatDate(p.created_at)}</td>
+                            <td class="p-3 font-medium">${p.contacts.name}</td>
+                            <td class="p-3">${window.formatDate(p.valid_until)}</td>
+                            <td class="p-3 text-right font-semibold">${window.formatCurrency(p.total_amount)}</td>
+                            <td class="p-3">${getStatusBadge(p.status)}</td>
+                            <td class="p-3 text-center space-x-2">
+                                ${p.status === 'Pendente' ? `<button class="approve-proposal-btn p-1 text-gray-500 hover:text-green-600" data-id="${p.id}" title="Aprovar"><i data-lucide="check" class="w-4 h-4"></i></button>`: ''}
+                                ${p.status === 'Aprovada' ? `<button class="convert-to-sale-btn p-1 text-gray-500 hover:text-blue-600" data-id="${p.id}" title="Converter em Venda"><i data-lucide="shopping-cart" class="w-4 h-4"></i></button>`: ''}
+                                <button class="edit-proposal-btn p-1 text-gray-500 hover:text-blue-600" data-id="${p.id}" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button class="delete-proposal-btn p-1 text-gray-500 hover:text-red-600" data-id="${p.id}" title="Apagar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    window.lucide.createIcons();
+                };
+
+                document.getElementById('new-proposal-btn').addEventListener('click', () => showPage(newProposalHtml, 'nav-vendas', runNewProposalScript));
+                document.getElementById('back-to-sales-hub-btn').addEventListener('click', () => showPage(salesHubHtml, 'nav-vendas', runSalesHubScript));
+                
+                tableBody.addEventListener('click', async (e) => {
+                    const approveBtn = e.target.closest('.approve-proposal-btn');
+                    const convertBtn = e.target.closest('.convert-to-sale-btn');
+                    const editBtn = e.target.closest('.edit-proposal-btn');
+                    
+                    if(approveBtn) {
+                        const { error } = await window.supabase.from('proposals').update({ status: 'Aprovada' }).eq('id', approveBtn.dataset.id);
+                        if(error) window.showMessage("Erro ao aprovar proposta.", "error");
+                        else {
+                           window.showMessage("Proposta aprovada!", "success");
+                           fetchProposals();
+                        }
+                    }
+                    if(convertBtn) {
+                        const proposalId = convertBtn.dataset.id;
+                        const { data: proposal, error } = await window.supabase.from('proposals').select(`*, contacts(name)`).eq('id', proposalId).single();
+                        const { data: items, error: itemsError } = await window.supabase.from('proposal_items').select(`*, products(*)`).eq('proposal_id', proposalId);
+                        
+                        if(error || itemsError) return window.showMessage("Erro ao carregar dados da proposta para conversão.", "error");
+
+                        showPage(vendasHtml, 'nav-vendas', runVendasScript, { proposal: { proposal, items } });
+                    }
+                    if (editBtn) {
+                        showPage(newProposalHtml, 'nav-vendas', runNewProposalScript, editBtn.dataset.id);
+                    }
+                });
+
+                fetchProposals();
+            };
+
+            const runNewProposalScript = (proposalIdToEdit = null) => {
+                console.log("Running New Proposal Script. Editing ID:", proposalIdToEdit);
+                const customerSearchInput = document.getElementById('proposal-customer-search');
+                const productSearchInput = document.getElementById('proposal-product-search');
+                const customerSearchResults = document.getElementById('proposal-customer-search-results');
+                const productSearchResults = document.getElementById('proposal-product-search-results');
+                const itemsTable = document.getElementById('proposal-items-table');
+                const totalEl = document.getElementById('proposal-total');
+                const validUntilInput = document.getElementById('proposal-valid-until');
+                const saveBtn = document.getElementById('save-proposal-btn');
+                
+                let selectedCustomer = null;
+                let proposalItems = [];
+
+                const renderItems = () => {
+                    itemsTable.innerHTML = proposalItems.map((item, index) => `
+                        <tr>
+                            <td class="p-3">${item.name}</td>
+                            <td class="p-3 text-center"><input type="number" value="${item.quantity}" min="1" data-index="${index}" class="quantity-input w-16 text-center border rounded"></td>
+                            <td class="p-3 text-right">${window.formatCurrency(item.unit_price)}</td>
+                            <td class="p-3 text-right">${window.formatCurrency(item.quantity * item.unit_price)}</td>
+                            <td class="p-3 text-center"><button class="remove-item-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                        </tr>
+                    `).join('');
+                    window.lucide.createIcons();
+                    updateTotal();
+                };
+
+                const updateTotal = () => {
+                    const total = proposalItems.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
+                    totalEl.textContent = window.formatCurrency(total);
+                };
+
+                customerSearchInput.addEventListener('input', async (e) => {
+                    const searchTerm = e.target.value;
+                    if (searchTerm.length < 2) { customerSearchResults.classList.add('hidden'); return; }
+                    const { data } = await window.supabase.from('contacts').select('id, name').eq('contact_type', 'Cliente').ilike('name', `%${searchTerm}%`).limit(5);
+                    customerSearchResults.innerHTML = '';
+                    if(data && data.length > 0) {
+                        data.forEach(c => {
+                            const div = document.createElement('div');
+                            div.textContent = c.name;
+                            div.onclick = () => { selectedCustomer = c; customerSearchInput.value = c.name; customerSearchResults.classList.add('hidden'); };
+                            customerSearchResults.appendChild(div);
+                        });
+                        customerSearchResults.classList.remove('hidden');
+                    }
+                });
+
+                productSearchInput.addEventListener('input', async (e) => {
+                    const searchTerm = e.target.value;
+                    if (searchTerm.length < 2) { productSearchResults.classList.add('hidden'); return; }
+                    const { data } = await window.supabase.from('products').select('id, name, price').or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`).limit(5);
+                    productSearchResults.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(p => {
+                            const div = document.createElement('div');
+                            div.textContent = `${p.name} - ${window.formatCurrency(p.price)}`;
+                            div.onclick = () => {
+                                const existing = proposalItems.find(i => i.product_id === p.id);
+                                if (existing) existing.quantity++;
+                                else proposalItems.push({ product_id: p.id, name: p.name, quantity: 1, unit_price: p.price });
+                                renderItems();
+                                productSearchInput.value = '';
+                                productSearchResults.classList.add('hidden');
+                            };
+                            productSearchResults.appendChild(div);
+                        });
+                        productSearchResults.classList.remove('hidden');
+                    }
+                });
+                
+                itemsTable.addEventListener('change', (e) => {
+                    if(e.target.classList.contains('quantity-input')) {
+                        proposalItems[e.target.dataset.index].quantity = parseInt(e.target.value) || 1;
+                        renderItems();
+                    }
+                });
+                
+                itemsTable.addEventListener('click', (e) => {
+                    const removeBtn = e.target.closest('.remove-item-btn');
+                    if(removeBtn) {
+                        proposalItems.splice(removeBtn.dataset.index, 1);
+                        renderItems();
+                    }
+                });
+
+                saveBtn.addEventListener('click', async () => {
+                    if (!selectedCustomer) return window.showMessage("Selecione um cliente.", "info");
+                    if (proposalItems.length === 0) return window.showMessage("Adicione produtos à proposta.", "info");
+
+                    const total = proposalItems.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
+                    const proposalData = {
+                        user_id: window.userId,
+                        contact_id: selectedCustomer.id,
+                        total_amount: total,
+                        valid_until: validUntilInput.value || null,
+                        status: 'Pendente'
+                    };
+
+                    if(proposalIdToEdit) {
+                         const { error } = await window.supabase.from('proposals').update(proposalData).eq('id', proposalIdToEdit);
+                         if(error) return window.showMessage("Erro ao atualizar proposta.", "error");
+                         // Simple update: delete old items and insert new ones
+                         await window.supabase.from('proposal_items').delete().eq('proposal_id', proposalIdToEdit);
+                         const itemsToInsert = proposalItems.map(item => ({...item, proposal_id: proposalIdToEdit, subtotal: item.quantity * item.unit_price}));
+                         await window.supabase.from('proposal_items').insert(itemsToInsert);
+                         window.showMessage("Proposta atualizada com sucesso!", "success");
+
+                    } else {
+                        const { data: newProposal, error } = await window.supabase.from('proposals').insert(proposalData).select().single();
+                        if(error) return window.showMessage("Erro ao criar proposta.", "error");
+
+                        const itemsToInsert = proposalItems.map(item => ({...item, proposal_id: newProposal.id, subtotal: item.quantity * item.unit_price}));
+                        await window.supabase.from('proposal_items').insert(itemsToInsert);
+                        window.showMessage("Proposta criada com sucesso!", "success");
+                    }
+                    
+                    showPage(proposalsListHtml, 'nav-vendas', runProposalsListScript);
+                });
+
+                document.getElementById('list-proposals-btn').addEventListener('click', () => showPage(proposalsListHtml, 'nav-vendas', runProposalsListScript));
+
+                if(proposalIdToEdit) {
+                    document.getElementById('proposal-page-title').textContent = "Editar Proposta";
+                    Promise.all([
+                        window.supabase.from('proposals').select(`*, contacts(*)`).eq('id', proposalIdToEdit).single(),
+                        window.supabase.from('proposal_items').select(`*, products(*)`).eq('proposal_id', proposalIdToEdit)
+                    ]).then(([{data: proposalData, error: pError}, {data: itemsData, error: iError}]) => {
+                         if(pError || iError) return window.showMessage("Erro ao carregar proposta para edição.", "error");
+                         selectedCustomer = proposalData.contacts;
+                         customerSearchInput.value = selectedCustomer.name;
+                         validUntilInput.value = proposalData.valid_until;
+                         proposalItems = itemsData.map(i => ({ product_id: i.product_id, name: i.products.name, quantity: i.quantity, unit_price: i.unit_price }));
+                         renderItems();
+                    });
+                }
+            };
+
             const runFinanceiroScript = async () => {
+                console.log("Running Financeiro Script");
                 const tabs = document.querySelectorAll('.finance-tab-link');
                 const contents = document.querySelectorAll('.finance-tab-content');
                 const payableBody = document.getElementById('accounts-payable-body');
+                const receivableBody = document.getElementById('accounts-receivable-body');
+                const addExpenseBtn = document.getElementById('add-expense-btn');
+                const addRevenueBtn = document.getElementById('add-revenue-btn');
+                const modal = document.getElementById('financial-transaction-modal');
+                const form = document.getElementById('financial-transaction-form');
+                const cancelBtn = document.getElementById('financial-modal-cancel');
+                const closeBtn = document.getElementById('financial-modal-close');
+
+                const fetchAndRenderAll = () => {
+                    fetchPayables();
+                    fetchReceivables();
+                };
+
+                const getStatusBadge = (status) => {
+                    switch (status) {
+                        case 'Pago':
+                        case 'Recebido':
+                            return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">${status}</span>`;
+                        case 'Atrasado':
+                            return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">${status}</span>`;
+                        case 'Pendente':
+                        default:
+                            return `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${status}</span>`;
+                    }
+                };
+
+                const fetchPayables = async () => {
+                    const { data, error } = await window.supabase.from('financial_transactions').select(`*, contacts(name)`).eq('user_id', window.userId).eq('type', 'despesa').order('due_date');
+                    if(error) return window.showMessage("Erro ao carregar contas a pagar.", 'error');
+
+                    payableBody.innerHTML = data.map(t => `
+                        <tr>
+                            <td class="p-3">${t.description}</td>
+                            <td class="p-3">${t.contacts?.name || 'N/A'}</td>
+                            <td class="p-3">${window.formatDate(t.due_date)}</td>
+                            <td class="p-3 text-right font-semibold">${window.formatCurrency(t.amount)}</td>
+                            <td class="p-3">${getStatusBadge(t.status)}</td>
+                            <td class="p-3 text-center space-x-2">
+                                ${t.status === 'Pendente' ? `<button class="mark-paid-btn p-1 text-gray-500 hover:text-green-600" data-id="${t.id}" title="Marcar como Pago"><i data-lucide="check-circle" class="w-4 h-4"></i></button>` : ''}
+                                <button class="edit-transaction-btn p-1 text-gray-500 hover:text-blue-600" data-id="${t.id}" data-type="despesa" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button class="delete-transaction-btn p-1 text-gray-500 hover:text-red-600" data-id="${t.id}" title="Apagar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    window.lucide.createIcons();
+                };
+
+                const fetchReceivables = async () => {
+                    const { data, error } = await window.supabase.from('financial_transactions').select(`*, contacts(name)`).eq('user_id', window.userId).eq('type', 'receita').order('due_date');
+                     if(error) return window.showMessage("Erro ao carregar contas a receber.", 'error');
+
+                    receivableBody.innerHTML = data.map(t => `
+                        <tr>
+                             <td class="p-3">${t.description}</td>
+                            <td class="p-3">${t.contacts?.name || 'N/A'}</td>
+                            <td class="p-3">${window.formatDate(t.due_date)}</td>
+                            <td class="p-3 text-right font-semibold">${window.formatCurrency(t.amount)}</td>
+                            <td class="p-3">${getStatusBadge(t.status)}</td>
+                            <td class="p-3 text-center space-x-2">
+                                ${t.status === 'Pendente' ? `<button class="mark-received-btn p-1 text-gray-500 hover:text-green-600" data-id="${t.id}" title="Marcar como Recebido"><i data-lucide="check-circle" class="w-4 h-4"></i></button>` : ''}
+                                <button class="edit-transaction-btn p-1 text-gray-500 hover:text-blue-600" data-id="${t.id}" data-type="receita" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button class="delete-transaction-btn p-1 text-gray-500 hover:text-red-600" data-id="${t.id}" title="Apagar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    window.lucide.createIcons();
+                };
                 
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        tabs.forEach(t => t.classList.remove('active'));
-                        contents.forEach(c => c.classList.remove('active'));
-                        tab.classList.add('active');
-                        document.getElementById(tab.dataset.tab).classList.add('active');
-                    });
+                const openTransactionModal = async (type, transactionId = null) => {
+                    form.reset();
+                    form.elements['type'].value = type;
+                    const contactSelect = form.elements['contact_id'];
+                    const contactLabel = document.getElementById('contact-label');
+                    contactSelect.innerHTML = '<option value="">Nenhum</option>';
+
+                    const contactType = type === 'despesa' ? 'Fornecedor' : 'Cliente';
+                    contactLabel.textContent = `${contactType} (Opcional)`;
+                    
+                    const { data: contacts } = await window.supabase.from('contacts').select('id, name').eq('user_id', window.userId).eq('contact_type', contactType);
+                    if (contacts) {
+                        contacts.forEach(c => contactSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+                    }
+
+                    if (transactionId) {
+                        document.getElementById('financial-modal-title').textContent = `Editar ${type === 'despesa' ? 'Despesa' : 'Receita'}`;
+                        const { data, error } = await window.supabase.from('financial_transactions').select('*').eq('id', transactionId).single();
+                        if (error) return window.showMessage("Erro ao carregar transação.", "error");
+                        form.elements['transaction_id'].value = data.id;
+                        form.elements['description'].value = data.description;
+                        form.elements['amount'].value = data.amount;
+                        form.elements['due_date'].value = data.due_date;
+                        form.elements['notes'].value = data.notes;
+                        if(data.contact_id) form.elements['contact_id'].value = data.contact_id;
+                    } else {
+                        document.getElementById('financial-modal-title').textContent = `Nova ${type === 'despesa' ? 'Despesa' : 'Receita'}`;
+                    }
+                    modal.classList.remove('hidden');
+                };
+
+                const handleSaveTransaction = async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const transactionData = {
+                        description: formData.get('description'),
+                        amount: parseFloat(formData.get('amount')),
+                        due_date: formData.get('due_date'),
+                        notes: formData.get('notes'),
+                        type: formData.get('type'),
+                        contact_id: formData.get('contact_id') || null,
+                        user_id: window.userId,
+                    };
+                    const transactionId = formData.get('transaction_id');
+                    
+                    const { error } = transactionId 
+                        ? await window.supabase.from('financial_transactions').update(transactionData).eq('id', transactionId)
+                        : await window.supabase.from('financial_transactions').insert([transactionData]);
+                    
+                    if(error) window.showMessage(`Erro: ${error.message}`, 'error');
+                    else {
+                        window.showMessage("Transação guardada!", "success");
+                        modal.classList.add('hidden');
+                        fetchAndRenderAll();
+                    }
+                };
+
+                const handleMarkAsPaid = async (id, type) => {
+                    const newStatus = type === 'despesa' ? 'Pago' : 'Recebido';
+                    const { error } = await window.supabase.from('financial_transactions').update({ status: newStatus, payment_date: new Date().toISOString() }).eq('id', id);
+                    if(error) window.showMessage(`Erro: ${error.message}`, 'error');
+                    else {
+                        window.showMessage(`Transação marcada como ${newStatus.toLowerCase()}!`, 'success');
+                        fetchAndRenderAll();
+                    }
+                };
+                
+                const handleDeleteTransaction = (id) => {
+                    const confirmationModal = document.getElementById('confirmation-modal');
+                    document.getElementById('confirmation-title').textContent = 'Apagar Transação';
+                    document.getElementById('confirmation-message').textContent = 'Tem a certeza de que deseja apagar esta transação financeira?';
+                    confirmationModal.classList.remove('hidden');
+                    document.getElementById('confirm-action-btn').onclick = async () => {
+                         const { error } = await window.supabase.from('financial_transactions').delete().eq('id', id);
+                         if(error) window.showMessage(`Erro: ${error.message}`, 'error');
+                         else {
+                             window.showMessage('Transação apagada.', 'success');
+                             fetchAndRenderAll();
+                         }
+                         confirmationModal.classList.add('hidden');
+                    };
+                     document.getElementById('cancel-action-btn').onclick = () => confirmationModal.classList.add('hidden');
+                };
+
+                tabs.forEach(tab => tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    tabs.forEach(t => t.classList.remove('active', 'border-blue-500', 'text-blue-500'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active', 'border-blue-500', 'text-blue-500');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                }));
+                
+                addExpenseBtn.addEventListener('click', () => openTransactionModal('despesa'));
+                addRevenueBtn.addEventListener('click', () => openTransactionModal('receita'));
+                form.addEventListener('submit', handleSaveTransaction);
+                cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+                closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+                document.getElementById('finance-tab-content-container').addEventListener('click', (e) => {
+                    const markPaidBtn = e.target.closest('.mark-paid-btn');
+                    const markReceivedBtn = e.target.closest('.mark-received-btn');
+                    const editBtn = e.target.closest('.edit-transaction-btn');
+                    const deleteBtn = e.target.closest('.delete-transaction-btn');
+
+                    if (markPaidBtn) handleMarkAsPaid(markPaidBtn.dataset.id, 'despesa');
+                    if (markReceivedBtn) handleMarkAsPaid(markReceivedBtn.dataset.id, 'receita');
+                    if (editBtn) openTransactionModal(editBtn.dataset.type, editBtn.dataset.id);
+                    if (deleteBtn) handleDeleteTransaction(deleteBtn.dataset.id);
                 });
                 
-                const { data, error } = await window.supabase.from('financial_transactions').select(`*, contacts(name)`).eq('user_id', window.userId).eq('type', 'despesa');
-                if(error) return window.showMessage("Erro ao carregar contas a pagar.", 'error');
-
-                payableBody.innerHTML = data.map(t => `
-                    <tr>
-                        <td class="p-3">${t.description}</td>
-                        <td class="p-3">${t.contacts?.name || 'N/A'}</td>
-                        <td class="p-3">${window.formatDate(t.due_date)}</td>
-                        <td class="p-3 text-right">${window.formatCurrency(t.amount)}</td>
-                        <td class="p-3">${t.status}</td>
-                        <td class="p-3 text-center"><button class="p-1 text-gray-500 hover:text-blue-600"><i data-lucide="edit" class="w-4 h-4"></i></button></td>
-                    </tr>
-                `).join('');
-                window.lucide.createIcons();
+                fetchAndRenderAll();
             };
             const runEstoqueScript = async () => {
                 const tableBody = document.getElementById('inventory-table-body');
@@ -1393,9 +1771,151 @@
                 adjustCloseBtn.addEventListener('click', closeAdjustModal);
                 fetchInventory();
             };
-            const runPurchasesHubScript = () => { window.showMessage('Módulo de Compras em desenvolvimento.', 'info'); };
-            const runNewPurchaseScript = () => { window.showMessage('Módulo de Compras em desenvolvimento.', 'info'); };
-            const runPurchasesListScript = () => { window.showMessage('Módulo de Compras em desenvolvimento.', 'info'); };
+            const runPurchasesHubScript = () => {
+                document.getElementById('go-to-new-purchase').addEventListener('click', () => showPage(newPurchaseHtml, 'nav-compras', runNewPurchaseScript));
+                document.getElementById('go-to-purchases-list').addEventListener('click', () => showPage(purchasesListHtml, 'nav-compras', runPurchasesListScript));
+            };
+            const runNewPurchaseScript = () => {
+                console.log("Running New Purchase Script");
+                const supplierSearchInput = document.getElementById('purchase-supplier-search');
+                const productSearchInput = document.getElementById('purchase-product-search');
+                const supplierSearchResults = document.getElementById('supplier-search-results');
+                const productSearchResults = document.getElementById('product-search-results');
+                const purchaseItemsTable = document.getElementById('purchase-items-table');
+                const purchaseTotalEl = document.getElementById('purchase-total');
+                const finishPurchaseBtn = document.getElementById('finish-purchase-btn');
+                const listPurchasesBtn = document.getElementById('list-purchases-btn');
+                
+                let selectedSupplier = null;
+                let purchaseItems = []; // { product_id, name, quantity, cost_price }
+
+                supplierSearchInput.addEventListener('input', async (e) => {
+                    const searchTerm = e.target.value;
+                    if (searchTerm.length < 2) { supplierSearchResults.classList.add('hidden'); return; }
+                    const { data } = await window.supabase.from('contacts').select('id, name').eq('contact_type', 'Fornecedor').ilike('name', `%${searchTerm}%`).limit(5);
+                    supplierSearchResults.innerHTML = '';
+                    if(data && data.length > 0) {
+                        data.forEach(supplier => {
+                            const div = document.createElement('div');
+                            div.textContent = supplier.name;
+                            div.onclick = () => {
+                                selectedSupplier = supplier;
+                                supplierSearchInput.value = supplier.name;
+                                supplierSearchResults.classList.add('hidden');
+                            };
+                            supplierSearchResults.appendChild(div);
+                        });
+                        supplierSearchResults.classList.remove('hidden');
+                    } else { supplierSearchResults.classList.add('hidden'); }
+                });
+
+                productSearchInput.addEventListener('input', async (e) => {
+                    const searchTerm = e.target.value;
+                    if (searchTerm.length < 2) { productSearchResults.classList.add('hidden'); return; }
+                    const { data } = await window.supabase.from('products').select('id, name, price').or(`name.ilike.%${searchTerm}%,sku.ilike.%${searchTerm}%`).limit(5);
+                    productSearchResults.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(p => {
+                            const div = document.createElement('div');
+                            div.textContent = `${p.name}`;
+                            div.onclick = () => {
+                                const existing = purchaseItems.find(i => i.product_id === p.id);
+                                if (existing) existing.quantity++;
+                                else purchaseItems.push({ product_id: p.id, name: p.name, quantity: 1, cost_price: 0 });
+                                renderPurchaseItems();
+                                productSearchInput.value = '';
+                                productSearchResults.classList.add('hidden');
+                            };
+                            productSearchResults.appendChild(div);
+                        });
+                        productSearchResults.classList.remove('hidden');
+                    }
+                });
+
+                const renderPurchaseItems = () => {
+                    purchaseItemsTable.innerHTML = purchaseItems.map((item, index) => `
+                        <tr>
+                            <td class="p-3">${item.name}</td>
+                            <td class="p-3 text-center"><input type="number" value="${item.quantity}" min="1" data-index="${index}" class="quantity-input w-16 text-center border rounded"></td>
+                            <td class="p-3 text-right"><input type="number" step="0.01" value="${item.cost_price}" data-index="${index}" class="cost-price-input w-24 text-right border rounded"></td>
+                            <td class="p-3 text-right">${window.formatCurrency(item.quantity * item.cost_price)}</td>
+                            <td class="p-3 text-center"><button class="remove-item-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                        </tr>
+                    `).join('');
+                    window.lucide.createIcons();
+                    updatePurchaseTotal();
+                };
+                
+                const updatePurchaseTotal = () => {
+                    const total = purchaseItems.reduce((acc, item) => acc + (item.quantity * item.cost_price), 0);
+                    purchaseTotalEl.textContent = window.formatCurrency(total);
+                };
+
+                purchaseItemsTable.addEventListener('change', (e) => {
+                    const index = e.target.dataset.index;
+                    if (e.target.classList.contains('quantity-input')) {
+                        purchaseItems[index].quantity = parseInt(e.target.value) || 1;
+                    }
+                    if (e.target.classList.contains('cost-price-input')) {
+                        purchaseItems[index].cost_price = parseFloat(e.target.value) || 0;
+                    }
+                    renderPurchaseItems();
+                });
+                
+                 purchaseItemsTable.addEventListener('click', (e) => {
+                    const removeBtn = e.target.closest('.remove-item-btn');
+                    if(removeBtn) {
+                        purchaseItems.splice(removeBtn.dataset.index, 1);
+                        renderPurchaseItems();
+                    }
+                });
+
+                finishPurchaseBtn.addEventListener('click', async () => {
+                    if (purchaseItems.length === 0) return window.showMessage("Adicione produtos à compra.", "info");
+                    if (!selectedSupplier) return window.showMessage("Selecione um fornecedor.", "info");
+
+                    const total = purchaseItems.reduce((acc, item) => acc + (item.quantity * item.cost_price), 0);
+                    const { data: purchaseData, error } = await window.supabase.from('purchases').insert({ user_id: window.userId, contact_id: selectedSupplier.id, total_amount: total }).select().single();
+                    if(error) return window.showMessage(`Erro ao criar compra: ${error.message}`, 'error');
+
+                    const itemsToInsert = purchaseItems.map(item => ({ purchase_id: purchaseData.id, product_id: item.product_id, quantity: item.quantity, cost_price: item.cost_price, subtotal: item.quantity * item.cost_price }));
+                    await window.supabase.from('purchase_items').insert(itemsToInsert);
+
+                    for(const item of purchaseItems) {
+                        await window.supabase.rpc('increase_stock', { p_product_id: item.product_id, p_quantity: item.quantity });
+                    }
+
+                    window.showMessage("Compra finalizada com sucesso!", "success");
+                    purchaseItems = [];
+                    selectedSupplier = null;
+                    supplierSearchInput.value = '';
+                    renderPurchaseItems();
+                });
+                
+                listPurchasesBtn.addEventListener('click', () => showPage(purchasesListHtml, 'nav-compras', runPurchasesListScript));
+            };
+
+            const runPurchasesListScript = async () => {
+                const tableBody = document.getElementById('purchases-list-table-body');
+                const backBtn = document.getElementById('back-to-purchases-hub-btn');
+
+                const { data, error } = await window.supabase.from('purchases').select(`id, created_at, total_amount, status, contacts ( name )`).eq('user_id', window.userId).order('created_at', { ascending: false });
+
+                if (error) return window.showMessage("Erro ao carregar compras.", "error");
+
+                tableBody.innerHTML = data.map(purchase => `
+                    <tr>
+                        <td class="p-3">${window.formatDate(purchase.created_at)}</td>
+                        <td class="p-3 font-medium">${purchase.contacts?.name || 'N/A'}</td>
+                        <td class="p-3 text-right font-semibold">${window.formatCurrency(purchase.total_amount)}</td>
+                        <td class="p-3">${purchase.status}</td>
+                        <td class="p-3 text-center"><button class="p-1 text-gray-500 hover:text-blue-600"><i data-lucide="eye" class="w-4 h-4"></i></button></td>
+                    </tr>
+                `).join('');
+                window.lucide.createIcons();
+
+                backBtn.addEventListener('click', () => showPage(purchasesHubHtml, 'nav-compras', runPurchasesHubScript));
+            };
             const runRelatoriosScript = () => { window.showMessage('Módulo de Relatórios em desenvolvimento.', 'info'); };
 
             // --- NAVIGATION SETUP ---
